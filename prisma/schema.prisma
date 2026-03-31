@@ -1,0 +1,202 @@
+// School Trip Payments — see sitio-design-notes data-model.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TripStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+}
+
+enum PassengerPaymentStatus {
+  PAID
+  PENDING
+  UNDER_REVIEW
+}
+
+enum PassengerDocumentStatus {
+  NOT_REQUIRED
+  PENDING
+  SUBMITTED
+  VERIFIED
+}
+
+enum PassengerCreatedVia {
+  IMPORT_FILE
+  MANUAL_FORM
+  FROM_PAYMENT
+}
+
+enum PassengerLifecycle {
+  ACTIVE
+  REMOVED
+}
+
+enum PaymentEntrySource {
+  INTEGRATION
+  MANUAL_STAFF
+}
+
+enum PaymentRecordStatus {
+  UNMATCHED
+  MATCHED
+  VERIFIED
+  FLAGGED
+}
+
+enum PaymentAuditEventType {
+  VERIFIED
+  MATCHED
+  REASSIGNED
+  UNMATCHED
+  FLAGGED
+  UNFLAGGED
+  PASSENGER_CREATED_FROM_PAYMENT
+}
+
+enum AuditActorType {
+  INTERNAL_USER
+  SYSTEM
+}
+
+enum ShareLinkScopeType {
+  TRIP
+  SCHOOL
+}
+
+enum FlagTargetType {
+  PASSENGER
+  PAYMENT_RECORD
+}
+
+enum FlagStatus {
+  OPEN
+  RESOLVED
+}
+
+model School {
+  id           String   @id @default(uuid())
+  name         String
+  externalRef  String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  trips        Trip[]
+  shareLinks   ShareLink[]
+}
+
+model Staff {
+  id         String   @id
+  username   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Trip {
+  id         String     @id @default(uuid())
+  schoolId   String
+  school     School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  title      String
+  code       String?    @unique
+  startsAt   DateTime?
+  endsAt     DateTime?
+  status     TripStatus @default(ACTIVE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  passengers Passenger[]
+  shareLinks ShareLink[]
+  payments   PaymentRecord[]
+}
+
+model Passenger {
+  id               String                   @id @default(uuid())
+  tripId           String
+  trip             Trip                     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  fullName         String
+  studentDocument  String?
+  paymentStatus    PassengerPaymentStatus   @default(PENDING)
+  documentStatus   PassengerDocumentStatus  @default(NOT_REQUIRED)
+  isFlagged        Boolean                  @default(false)
+  flagReason       String?
+  createdVia       PassengerCreatedVia?
+  lifecycle        PassengerLifecycle       @default(ACTIVE)
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  matchedPayments  PaymentRecord[]          @relation("MatchedPassenger")
+}
+
+model PaymentRecord {
+  id                   String               @id @default(uuid())
+  entrySource          PaymentEntrySource
+  integrationSource    String
+  externalPaymentId    String
+  tripId               String?
+  trip                 Trip?                @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  rawPayload           Json?
+  amount               Decimal?             @db.Decimal(18, 2)
+  currency             String?
+  paymentDate          DateTime?
+  status               PaymentRecordStatus  @default(UNMATCHED)
+  matchedPassengerId   String?
+  matchedPassenger     Passenger?           @relation("MatchedPassenger", fields: [matchedPassengerId], references: [id], onDelete: SetNull)
+  verifiedByUserId     String?
+  verifiedAt           DateTime?
+  suspectedDuplicateOf String?
+  duplicateOf          PaymentRecord?       @relation("PaymentDuplicates", fields: [suspectedDuplicateOf], references: [id], onDelete: SetNull)
+  suspectedDuplicates  PaymentRecord[]      @relation("PaymentDuplicates")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  auditEvents          PaymentAuditEvent[]
+
+  @@unique([integrationSource, externalPaymentId])
+  @@index([tripId])
+  @@index([status])
+}
+
+model PaymentAuditEvent {
+  id               String                 @id @default(uuid())
+  paymentRecordId  String
+  paymentRecord    PaymentRecord          @relation(fields: [paymentRecordId], references: [id], onDelete: Cascade)
+  eventType        PaymentAuditEventType
+  actorType        AuditActorType
+  actorId          String
+  fromPassengerId  String?
+  toPassengerId    String?
+  reason           String?
+  occurredAt       DateTime               @default(now())
+  metadata         Json?
+}
+
+model ShareLink {
+  id              String             @id @default(uuid())
+  tokenHash       String             @unique
+  scopeType       ShareLinkScopeType
+  tripId          String?
+  trip            Trip?              @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  schoolId        String?
+  school          School?            @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  createdByUserId String
+  createdAt       DateTime           @default(now())
+}
+
+model Flag {
+  id               String         @id @default(uuid())
+  targetType       FlagTargetType
+  targetId         String
+  reason           String
+  status           FlagStatus     @default(OPEN)
+  createdByUserId  String
+  resolvedByUserId String?
+  createdAt        DateTime       @default(now())
+  resolvedAt       DateTime?
+
+  @@index([targetType, targetId])
+}

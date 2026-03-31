@@ -1,0 +1,15 @@
+meta {
+  name: GET /v1/schools
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/v1/schools
+  body: none
+  auth: none
+}
+
+headers {
+  x-auth-user-id: test-user-1
+}

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "school-trip-payments",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
