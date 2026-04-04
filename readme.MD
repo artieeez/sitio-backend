@@ -26,12 +26,22 @@ pnpm run lint        # Biome check + format fixes
 pnpm run format      # Biome format only
 ```
 
-After `prisma/schema.prisma` exists, apply migrations locally (human/CI): `pnpm exec prisma migrate dev`.
+### Database schema and migrations (human-run)
+
+1. Ensure `DATABASE_URL` is set (see `.env.example`). Prisma 7 reads the URL from **`prisma.config.ts`** for CLI commands; the `datasource` block in `prisma/schema.prisma` declares only the provider.
+2. After any change to `prisma/schema.prisma`, create and apply a migration locally (or in CI with your team’s workflow):
+
+   ```bash
+   pnpm exec prisma migrate dev --name describe_your_change
+   ```
+
+   **Agents** update the schema and docs only; **do not** commit generated migration SQL unless your process explicitly requires it—humans normally run the command above and commit the `prisma/migrations/` output.
+3. Regenerate the client after schema changes (usually automatic after `migrate dev`; otherwise `pnpm exec prisma generate`).
 
 ## Stack
 
 - NestJS 11, **strict TypeScript** (`tsconfig.json`)
-- **@nestjs/cqrs**, **@nestjs/config**, **Prisma** (schema and migrations in Phase 2+)
+- **@nestjs/cqrs**, **@nestjs/config**, **Prisma 7** (`prisma/schema.prisma` + `prisma.config.ts` for CLI `DATABASE_URL`)
 - Lint/format: **Biome**
 
 ## Design references
