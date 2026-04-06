@@ -64,6 +64,9 @@ function httpStatusToCode(status: number): string {
   if (status === 409) {
     return "CONFLICT";
   }
+  if (status === 428) {
+    return "PRECONDITION_REQUIRED";
+  }
   if (status === 502) {
     return "BAD_GATEWAY";
   }

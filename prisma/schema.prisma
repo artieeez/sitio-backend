@@ -10,7 +10,6 @@ datasource db {
 
 model School {
   id          String   @id @default(uuid()) @db.Uuid
-  name        String
   url         String?
   active      Boolean  @default(true)
   title       String?

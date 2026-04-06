@@ -42,6 +42,7 @@ pnpm run format      # Biome format only
 
 - NestJS 11, **strict TypeScript** (`tsconfig.json`)
 - **@nestjs/cqrs**, **@nestjs/config**, **Prisma 7** (`prisma/schema.prisma` + `prisma.config.ts` for CLI `DATABASE_URL`)
+- Runtime DB access: **`pg`** + **`@prisma/adapter-pg`** (see `PrismaService`); `DATABASE_URL` must be set at process start.
 - Lint/format: **Biome**
 
 ## Design references
