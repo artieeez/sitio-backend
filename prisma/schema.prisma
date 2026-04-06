@@ -1,0 +1,85 @@
+// Persistence contract for 001-school-trip-payments — see sibling design-notes data-model.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model School {
+  id          String   @id @default(uuid()) @db.Uuid
+  url         String?
+  active      Boolean  @default(true)
+  title       String?
+  description String?
+  imageUrl    String?  @map("image_url")
+  faviconUrl  String?  @map("favicon_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  trips Trip[]
+
+  @@map("schools")
+}
+
+model Trip {
+  id                         String   @id @default(uuid()) @db.Uuid
+  schoolId                   String   @map("school_id") @db.Uuid
+  url                        String?
+  title                      String?
+  description                String?
+  imageUrl                   String?  @map("image_url")
+  faviconUrl                 String?  @map("favicon_url")
+  defaultExpectedAmountMinor Int?     @map("default_expected_amount_minor")
+  active                     Boolean  @default(true)
+  createdAt                  DateTime @default(now()) @map("created_at")
+  updatedAt                  DateTime @updatedAt @map("updated_at")
+
+  school     School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  passengers Passenger[]
+
+  @@index([schoolId])
+  @@map("trips")
+}
+
+/// CPF uniqueness on the same trip includes soft-removed rows (FR-031). PostgreSQL treats
+/// multiple NULL `cpfNormalized` as distinct, so several passengers without CPF are allowed.
+model Passenger {
+  id                          String    @id @default(uuid()) @db.Uuid
+  tripId                      String    @map("trip_id") @db.Uuid
+  fullName                    String    @map("full_name")
+  cpfNormalized               String?   @map("cpf_normalized")
+  parentName                  String?   @map("parent_name")
+  parentPhoneNumber           String?   @map("parent_phone_number")
+  parentEmail                 String?   @map("parent_email")
+  expectedAmountOverrideMinor Int?      @map("expected_amount_override_minor")
+  manualPaidWithoutInfo       Boolean   @default(false) @map("manual_paid_without_info")
+  removedAt                   DateTime? @map("removed_at")
+  createdAt                   DateTime  @default(now()) @map("created_at")
+  updatedAt                   DateTime  @updatedAt @map("updated_at")
+
+  trip     Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  payments Payment[]
+
+  @@unique([tripId, cpfNormalized], map: "passenger_trip_cpf_unique")
+  @@index([tripId])
+  @@map("passengers")
+}
+
+model Payment {
+  id            String   @id @default(uuid()) @db.Uuid
+  passengerId   String   @map("passenger_id") @db.Uuid
+  amountMinor   Int      @map("amount_minor")
+  paidOn        DateTime @map("paid_on") @db.Date
+  location      String
+  payerIdentity String   @map("payer_identity")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  passenger Passenger @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@index([passengerId])
+  @@map("payments")
+}
