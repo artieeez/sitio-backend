@@ -7,7 +7,7 @@ import {
   UpdatePassengerHandler,
 } from "./passenger.command-handlers";
 import { PassengerController } from "./passenger.controller";
-import { ListPassengersForTripHandler } from "./passenger.query-handlers";
+import { ListPassengersForTripHandler } from "./queries/list-passengers-for-trip.handler";
 import { TripPassengersController } from "./trip-passengers.controller";
 
 @Module({

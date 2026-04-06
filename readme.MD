@@ -22,6 +22,7 @@ pnpm run start:dev   # watch mode
 pnpm run build
 pnpm run test
 pnpm run test:e2e
+pnpm run openapi:check   # smoke-check sibling OpenAPI + route strings (requires ../sitio-design-notes)
 pnpm run lint        # Biome check + format fixes
 pnpm run format      # Biome format only
 ```

@@ -5,11 +5,15 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Query,
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { TripUpdateDto } from "./dto/trip-update.dto";
 import { UpdateTripCommand } from "./trip.commands";
-import { GetTripQuery } from "./trip.queries";
+import {
+  GetPassengerStatusAggregatesQuery,
+  GetTripQuery,
+} from "./trip.queries";
 
 @Controller("trips")
 export class TripController {
@@ -17,6 +21,16 @@ export class TripController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
+
+  @Get(":tripId/passenger-status-aggregates")
+  passengerStatusAggregates(
+    @Param("tripId", ParseUUIDPipe) tripId: string,
+    @Query("includeRemoved") includeRemoved?: string,
+  ) {
+    return this.queryBus.execute(
+      new GetPassengerStatusAggregatesQuery(tripId, includeRemoved === "true"),
+    );
+  }
 
   @Get(":tripId")
   get(@Param("tripId", ParseUUIDPipe) tripId: string) {

@@ -8,3 +8,10 @@ export class ListTripsForSchoolQuery {
 export class GetTripQuery {
   constructor(public readonly tripId: string) {}
 }
+
+export class GetPassengerStatusAggregatesQuery {
+  constructor(
+    public readonly tripId: string,
+    public readonly includeRemoved: boolean,
+  ) {}
+}

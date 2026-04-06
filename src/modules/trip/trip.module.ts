@@ -5,6 +5,7 @@ import { SchoolTripsController } from "./school-trips.controller";
 import { CreateTripHandler, UpdateTripHandler } from "./trip.command-handlers";
 import { TripController } from "./trip.controller";
 import {
+  GetPassengerStatusAggregatesHandler,
   GetTripHandler,
   ListTripsForSchoolHandler,
 } from "./trip.query-handlers";
@@ -17,6 +18,7 @@ import {
     UpdateTripHandler,
     ListTripsForSchoolHandler,
     GetTripHandler,
+    GetPassengerStatusAggregatesHandler,
   ],
 })
 export class TripModule {}

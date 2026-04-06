@@ -1,8 +1,8 @@
 import { NotFoundException } from "@nestjs/common";
 import { type IQueryHandler, QueryHandler } from "@nestjs/cqrs";
-import { PrismaService } from "../../prisma/prisma.service";
-import { mapPassengerWithStatus } from "./passenger.mapper";
-import { ListPassengersForTripQuery } from "./passenger.queries";
+import { PrismaService } from "../../../prisma/prisma.service";
+import { mapPassengerWithStatus } from "../passenger.mapper";
+import { ListPassengersForTripQuery } from "../passenger.queries";
 
 @QueryHandler(ListPassengersForTripQuery)
 export class ListPassengersForTripHandler

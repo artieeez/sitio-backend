@@ -6,7 +6,10 @@ import { PrismaService } from "../prisma/prisma.service";
 function corsOrigin(): boolean | string[] {
   const raw = process.env.CORS_ORIGINS?.trim();
   if (raw) {
-    return raw.split(",").map((o) => o.trim()).filter(Boolean);
+    return raw
+      .split(",")
+      .map((o) => o.trim())
+      .filter(Boolean);
   }
   if (process.env.NODE_ENV === "production") {
     return [];
