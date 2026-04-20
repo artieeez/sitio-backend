@@ -4,6 +4,8 @@ const SENSITIVE_KEYS = new Set([
   "cpf_normalized",
   "parentPhoneNumber",
   "parent_phone_number",
+  "publicKey",
+  "privateApiKey",
 ]);
 
 /** Deep-clone plain JSON-like values and replace sensitive keys with `[REDACTED]`. */

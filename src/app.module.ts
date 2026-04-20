@@ -8,6 +8,7 @@ import { PassengerModule } from "./modules/passenger/passenger.module";
 import { PaymentModule } from "./modules/payment/payment.module";
 import { SchoolModule } from "./modules/school/school.module";
 import { TripModule } from "./modules/trip/trip.module";
+import { WixIntegrationModule } from "./modules/wix-integration/wix-integration.module";
 import { PrismaModule } from "./prisma/prisma.module";
 
 @Module({
@@ -20,6 +21,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     TripModule,
     PassengerModule,
     PaymentModule,
+    WixIntegrationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
