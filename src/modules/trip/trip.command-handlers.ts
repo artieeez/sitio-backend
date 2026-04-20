@@ -33,7 +33,6 @@ export class CreateTripHandler implements ICommandHandler<CreateTripCommand> {
         title: dto.title ?? null,
         description: dto.description ?? null,
         imageUrl: dto.imageUrl ?? null,
-        faviconUrl: dto.faviconUrl ?? null,
         active: dto.active ?? true,
       },
     });
@@ -66,7 +65,6 @@ export class UpdateTripHandler implements ICommandHandler<UpdateTripCommand> {
         ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.description !== undefined && { description: dto.description }),
         ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),
-        ...(dto.faviconUrl !== undefined && { faviconUrl: dto.faviconUrl }),
         ...(dto.active !== undefined && { active: dto.active }),
       },
     });

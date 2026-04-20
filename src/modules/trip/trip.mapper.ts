@@ -10,7 +10,6 @@ export function mapTrip(t: Trip) {
     title: t.title,
     description: t.description,
     imageUrl: t.imageUrl,
-    faviconUrl: t.faviconUrl,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
   };

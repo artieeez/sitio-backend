@@ -38,11 +38,6 @@ export class TripCreateDto {
   imageUrl?: string | null;
 
   @IsOptional()
-  @ValidateIf((_, v) => v != null && v !== "")
-  @IsUrl({ require_tld: false })
-  faviconUrl?: string | null;
-
-  @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
   active?: boolean;
