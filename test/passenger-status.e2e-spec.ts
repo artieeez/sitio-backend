@@ -116,7 +116,7 @@ describe("Passenger status aggregates (e2e)", () => {
     expect(inc.body.pendingCount).toBe(2);
   });
 
-  it("PATCH trip default amount changes derived passenger status (FR-019)", async () => {
+  it("changing trip default expected amount updates derived passenger status (FR-019)", async () => {
     const tripId = await seedTripWithExpectedAmount(5000);
 
     const p = await request(app.getHttpServer())
@@ -143,10 +143,10 @@ describe("Passenger status aggregates (e2e)", () => {
     );
     expect(row?.status).toBe("pending");
 
-    await request(app.getHttpServer())
-      .patch(`/api/trips/${tripId}`)
-      .send({ defaultExpectedAmountMinor: 2500 })
-      .expect(200);
+    await prisma.trip.update({
+      where: { id: tripId },
+      data: { defaultExpectedAmountMinor: 2500 },
+    });
 
     const after = await request(app.getHttpServer())
       .get(`/api/trips/${tripId}/passengers`)

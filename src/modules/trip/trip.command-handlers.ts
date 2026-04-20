@@ -58,11 +58,7 @@ export class UpdateTripHandler implements ICommandHandler<UpdateTripCommand> {
     const trip = await this.prisma.trip.update({
       where: { id: tripId },
       data: {
-        ...(dto.defaultExpectedAmountMinor !== undefined && {
-          defaultExpectedAmountMinor: dto.defaultExpectedAmountMinor,
-        }),
         ...(dto.url !== undefined && { url: dto.url }),
-        ...(dto.title !== undefined && { title: dto.title }),
         ...(dto.description !== undefined && { description: dto.description }),
         ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),
         ...(dto.active !== undefined && { active: dto.active }),

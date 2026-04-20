@@ -3,6 +3,7 @@ import dns from "node:dns/promises";
 import net from "node:net";
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import type { LandingMetadataResponse } from "./dto/fetch-page.dto";
+import { parseLandingMetadataFromHtml } from "./parse-landing-metadata";
 
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 10_000;
@@ -38,7 +39,7 @@ export class MetadataService {
       );
     }
 
-    return this.parseHtmlMetadata(html, url);
+    return parseLandingMetadataFromHtml(html, url);
   }
 
   private async assertSafeTarget(url: URL): Promise<void> {
@@ -153,60 +154,6 @@ export class MetadataService {
     }
   }
 
-  private parseHtmlMetadata(
-    html: string,
-    pageUrl: URL,
-  ): LandingMetadataResponse {
-    const pickMeta = (
-      attr: "property" | "name",
-      key: string,
-    ): string | null => {
-      const re = new RegExp(
-        `<meta[^>]+${attr}=["']${key}["'][^>]+content=["']([^"']*)["'][^>]*>`,
-        "i",
-      );
-      const re2 = new RegExp(
-        `<meta[^>]+content=["']([^"']*)["'][^>]+${attr}=["']${key}["'][^>]*>`,
-        "i",
-      );
-      return html.match(re)?.[1] ?? html.match(re2)?.[1] ?? null;
-    };
-
-    const titleFromOg = pickMeta("property", "og:title");
-    const titleTag =
-      html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() ?? null;
-    const title = titleFromOg ?? titleTag;
-
-    const description =
-      pickMeta("property", "og:description") ??
-      pickMeta("name", "description") ??
-      null;
-
-    const ogImage = pickMeta("property", "og:image");
-    const imageUrl = ogImage ? absolutizeUrl(ogImage, pageUrl) : null;
-
-    let faviconUrl: string | null = null;
-    const iconHref =
-      html.match(
-        /<link[^>]+rel=["'](?:shortcut )?icon["'][^>]+href=["']([^"']+)["']/i,
-      )?.[1] ??
-      html.match(
-        /<link[^>]+href=["']([^"']+)["'][^>]+rel=["'](?:shortcut )?icon["']/i,
-      )?.[1] ??
-      null;
-    if (iconHref) {
-      faviconUrl = absolutizeUrl(iconHref, pageUrl);
-    } else {
-      faviconUrl = new URL("/favicon.ico", pageUrl).href;
-    }
-
-    return {
-      title,
-      description,
-      imageUrl,
-      faviconUrl,
-    };
-  }
 }
 
 function isBlockedHostname(hostname: string): boolean {
@@ -262,10 +209,3 @@ function isBlockedIp(ip: string): boolean {
   return false;
 }
 
-function absolutizeUrl(href: string, base: URL): string {
-  try {
-    return new URL(href, base).href;
-  } catch {
-    return href;
-  }
-}
