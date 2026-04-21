@@ -50,7 +50,7 @@ pnpm run format      # Biome format only
 
 ## Wix API exploration (Bruno)
 
-Manual calls to Wix REST endpoints (before implementing them in Nest) live in **`bruno/wix-api/`**. Open that folder as a [Bruno](https://www.usebruno.com/) collection; see `bruno/wix-api/README.md`. Implemented in code: `WixApiService` (`createCollection`, `deleteCollection`, `generateFileUploadUrl`, `getCatalogVersion`, `getProduct`, `queryCollections`, `queryProducts`).
+Manual calls to Wix REST endpoints (before implementing them in Nest) live in **`bruno/wix-api/`**. Open that folder as a [Bruno](https://www.usebruno.com/) collection; see `bruno/wix-api/README.md`. Implemented in code: `WixApiService` (`createCollection`, `deleteCollection`, `generateFileUploadUrl`, `getCatalogVersion`, `getProduct`, `queryCollections`, `queryProducts`). The dashboard obtains upload tokens via **`POST /integrations/wix/media/generate-upload-url`** (Nest → Wix `site-media/v1/files/generate-upload-url`); the browser then **PUTs** the file to the returned `uploadUrl` and reads `file.id` / `file.url` from Wix’s response.
 
 ## Design references
 

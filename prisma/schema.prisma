@@ -49,6 +49,8 @@ model Trip {
   title                      String?
   description                String?
   imageUrl                   String?  @map("image_url")
+  /** Wix Media Manager file id after direct upload (e.g. `...~mv2.jpeg`). */
+  wixMediaFileId             String?  @map("wix_media_file_id")
   defaultExpectedAmountMinor Int?     @map("default_expected_amount_minor")
   active                     Boolean  @default(true)
   createdAt                  DateTime @default(now()) @map("created_at")

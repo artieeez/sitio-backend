@@ -12,6 +12,7 @@ export function mapTrip(t: Trip) {
     title: t.title,
     description: t.description,
     imageUrl: t.imageUrl,
+    wixMediaFileId: t.wixMediaFileId,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
   };

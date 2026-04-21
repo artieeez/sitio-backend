@@ -7,9 +7,11 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   Query,
 } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
+import { GenerateWixMediaUploadUrlDto } from "./dto/generate-wix-media-upload-url.dto";
 import { PatchWixIntegrationDto } from "./dto/patch-wix-integration.dto";
 import {
   toWixCollectionSummaryDto,
@@ -37,6 +39,23 @@ export class WixIntegrationController {
   @Patch()
   patchSettings(@Body() dto: PatchWixIntegrationDto) {
     return this.wixIntegration.patchSettings(dto);
+  }
+
+  /**
+   * Returns a Wix upload URL; the client PUTs the file bytes to that URL, then reads `file.id` / `file.url` from the response body.
+   * @see https://dev.wix.com/docs/api-reference/assets/media/media-manager/files/generate-file-upload-url
+   */
+  @Post("media/generate-upload-url")
+  generateMediaUploadUrl(@Body() dto: GenerateWixMediaUploadUrlDto) {
+    return this.wixApi.generateFileUploadUrl({
+      mimeType: dto.mimeType.trim(),
+      fileName: dto.fileName?.trim(),
+      filePath: dto.filePath?.trim(),
+      labels: dto.labels,
+      parentFolderId: dto.parentFolderId?.trim(),
+      private: dto.private,
+      sizeInBytes: dto.sizeInBytes,
+    });
   }
 
   /** Autocomplete: products in the school’s Wix collection by name prefix; empty prefix returns the five most recently updated in that collection. */

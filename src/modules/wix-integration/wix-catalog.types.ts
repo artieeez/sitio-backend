@@ -163,3 +163,16 @@ export type GenerateFileUploadUrlRequest = {
 export type GenerateFileUploadUrlResponse = {
   uploadUrl: string;
 };
+
+/** Shape of `file` in the JSON body returned by PUT to `uploadUrl` (Upload API). */
+export type WixMediaUploadedFile = {
+  id?: string;
+  url?: string;
+  displayName?: string;
+  thumbnailUrl?: string;
+};
+
+/** @see https://dev.wix.com/docs/rest/assets/media/media-manager/files/upload-api.md */
+export type WixMediaUploadPutResponse = {
+  file?: WixMediaUploadedFile;
+};

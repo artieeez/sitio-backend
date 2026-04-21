@@ -58,6 +58,7 @@ export class CreateTripHandler implements ICommandHandler<CreateTripCommand> {
         title: dto.title ?? null,
         description: dto.description ?? null,
         imageUrl: dto.imageUrl ?? null,
+        wixMediaFileId: dto.wixMediaFileId?.trim() || null,
         active: dto.active ?? true,
       },
     });
@@ -113,6 +114,18 @@ export class UpdateTripHandler implements ICommandHandler<UpdateTripCommand> {
       data: {
         ...(dto.description !== undefined && { description: dto.description }),
         ...(dto.active !== undefined && { active: dto.active }),
+        ...(dto.imageUrl !== undefined && {
+          imageUrl:
+            dto.imageUrl != null && dto.imageUrl.trim() !== ""
+              ? dto.imageUrl.trim()
+              : null,
+        }),
+        ...(dto.wixMediaFileId !== undefined && {
+          wixMediaFileId:
+            dto.wixMediaFileId != null && dto.wixMediaFileId.trim() !== ""
+              ? dto.wixMediaFileId.trim()
+              : null,
+        }),
       },
     });
     return mapTrip(trip);

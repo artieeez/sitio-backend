@@ -48,6 +48,12 @@ export class TripCreateDto {
   imageUrl?: string | null;
 
   @IsOptional()
+  @ValidateIf((_, v) => v != null && v !== "")
+  @IsString()
+  @MaxLength(500)
+  wixMediaFileId?: string | null;
+
+  @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
   active?: boolean;
