@@ -12,15 +12,25 @@ import {
 
 export class TripCreateDto {
   @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Type(() => Number)
-  defaultExpectedAmountMinor?: number | null;
+  @IsString()
+  @MaxLength(200)
+  wixProductId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  wixProductSlug?: string | null;
 
   @IsOptional()
   @ValidateIf((_, v) => v != null && v !== "")
   @IsUrl({ require_tld: false })
-  url?: string | null;
+  wixProductPageUrl?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  defaultExpectedAmountMinor?: number | null;
 
   @IsOptional()
   @IsString()

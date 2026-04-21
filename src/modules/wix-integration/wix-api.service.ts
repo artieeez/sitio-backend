@@ -246,6 +246,39 @@ export class WixApiService {
   }
 
   /**
+   * Products in `collectionId` whose `name` starts with `prefix` (case-insensitive).
+   * Uses a collection filter plus client-side prefix match (max 50 scanned, 20 returned).
+   */
+  async searchProductsInCollectionByPrefix(
+    collectionId: string,
+    prefix: string,
+  ): Promise<QueryProductsResponse> {
+    const p = prefix.trim().toLowerCase();
+    if (p.length === 0) {
+      return { products: [] };
+    }
+    const id = collectionId.trim();
+    if (!id) {
+      throw new BadGatewayException("Wix collection id is required");
+    }
+    const filter = JSON.stringify({
+      "collections.id": { $in: [id] },
+    });
+    const res = await this.queryProducts({
+      query: {
+        filter,
+        sort: '[{"name":"asc"}]',
+        paging: { limit: 50, offset: 0 },
+      },
+      includeVariants: false,
+    });
+    const products = res.products
+      .filter((prod) => (prod.name ?? "").toLowerCase().startsWith(p))
+      .slice(0, 20);
+    return { ...res, products };
+  }
+
+  /**
    * Collections whose `name` starts with `prefix` (empty prefix → empty list, no request).
    */
   async searchCollectionsByPrefix(

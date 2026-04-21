@@ -42,7 +42,10 @@ model WixIntegration {
 model Trip {
   id                         String   @id @default(uuid()) @db.Uuid
   schoolId                   String   @map("school_id") @db.Uuid
-  url                        String?
+  /** Wix Stores product GUID when the trip is tied to a catalog product. */
+  wixProductId               String?  @map("wix_product_id")
+  wixProductSlug             String?  @map("wix_product_slug")
+  wixProductPageUrl          String?  @map("wix_product_page_url")
   title                      String?
   description                String?
   imageUrl                   String?  @map("image_url")

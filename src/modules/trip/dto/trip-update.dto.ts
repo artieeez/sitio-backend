@@ -10,19 +10,9 @@ import {
 
 export class TripUpdateDto {
   @IsOptional()
-  @ValidateIf((_, v) => v != null && v !== "")
-  @IsUrl({ require_tld: false })
-  url?: string | null;
-
-  @IsOptional()
   @IsString()
   @MaxLength(8000)
   description?: string | null;
-
-  @IsOptional()
-  @ValidateIf((_, v) => v != null && v !== "")
-  @IsUrl({ require_tld: false })
-  imageUrl?: string | null;
 
   @IsOptional()
   @IsBoolean()

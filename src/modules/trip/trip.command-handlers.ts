@@ -1,4 +1,8 @@
-import { ConflictException, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from "@nestjs/common";
 import { CommandHandler, type ICommandHandler } from "@nestjs/cqrs";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateTripCommand, UpdateTripCommand } from "./trip.commands";
@@ -25,11 +29,28 @@ export class CreateTripHandler implements ICommandHandler<CreateTripCommand> {
         code: "SCHOOL_INACTIVE",
       });
     }
+    const collectionId = school.wixCollectionId?.trim();
+    if (!collectionId) {
+      throw new BadRequestException({
+        message:
+          "Configure a Wix collection for the school before creating a trip",
+        code: "SCHOOL_WIX_COLLECTION_REQUIRED",
+      });
+    }
+    const wixProductId = dto.wixProductId?.trim();
+    if (!wixProductId) {
+      throw new BadRequestException({
+        message: "Select a Wix product for the trip",
+        code: "WIX_PRODUCT_REQUIRED",
+      });
+    }
     const trip = await this.prisma.trip.create({
       data: {
         schoolId,
+        wixProductId,
+        wixProductSlug: dto.wixProductSlug?.trim() ?? null,
+        wixProductPageUrl: dto.wixProductPageUrl?.trim() ?? null,
         defaultExpectedAmountMinor: dto.defaultExpectedAmountMinor ?? null,
-        url: dto.url ?? null,
         title: dto.title ?? null,
         description: dto.description ?? null,
         imageUrl: dto.imageUrl ?? null,
@@ -58,9 +79,7 @@ export class UpdateTripHandler implements ICommandHandler<UpdateTripCommand> {
     const trip = await this.prisma.trip.update({
       where: { id: tripId },
       data: {
-        ...(dto.url !== undefined && { url: dto.url }),
         ...(dto.description !== undefined && { description: dto.description }),
-        ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),
         ...(dto.active !== undefined && { active: dto.active }),
       },
     });
