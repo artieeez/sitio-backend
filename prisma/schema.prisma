@@ -24,9 +24,11 @@ model School {
   @@map("schools")
 }
 
-/// Tenant-wide Wix site public key (webhooks) + API secret; single row (`id` = 1). Full values are never returned to the client.
+/// Tenant-wide Wix app id + site public key (webhooks) + API secret; single row (`id` = 1). Private key is never returned in full to the client.
 model WixIntegration {
   id            Int      @id @default(1)
+  /** Wix application ID; sent as `wix-app-id` on REST calls when set. */
+  appId         String?  @map("app_id")
   publicKey     String?  @map("public_key")
   privateApiKey String?  @map("private_api_key")
   createdAt     DateTime @default(now()) @map("created_at")

@@ -65,7 +65,7 @@ export class WixApiService {
       );
     }
 
-    const headers = this.buildAuthHeaders(apiKey);
+    const headers = await this.buildAuthHeaders(apiKey);
 
     const res = await fetch(url, { method: "GET", headers });
 
@@ -112,7 +112,7 @@ export class WixApiService {
     }
 
     const url = new URL(`${STORES_V3_PROVISION_BASE}/version`);
-    const headers = this.buildAuthHeaders(apiKey);
+    const headers = await this.buildAuthHeaders(apiKey);
     const res = await fetch(url, { method: "GET", headers });
 
     const bodyText = await res.text();
@@ -159,7 +159,7 @@ export class WixApiService {
 
     const url = new URL(`${STORES_READER_BASE}/collections/query`);
     const headers: Record<string, string> = {
-      ...this.buildAuthHeaders(apiKey),
+      ...(await this.buildAuthHeaders(apiKey)),
       "Content-Type": "application/json",
     };
 
@@ -214,7 +214,7 @@ export class WixApiService {
 
     const url = new URL(`${STORES_V1_BASE}/collections`);
     const headers: Record<string, string> = {
-      ...this.buildAuthHeaders(apiKey),
+      ...(await this.buildAuthHeaders(apiKey)),
       "Content-Type": "application/json",
     };
 
@@ -277,7 +277,7 @@ export class WixApiService {
     const url = new URL(
       `${STORES_V1_BASE}/collections/${encodeURIComponent(id)}`,
     );
-    const headers = this.buildAuthHeaders(apiKey);
+    const headers = await this.buildAuthHeaders(apiKey);
 
     const res = await fetch(url, { method: "DELETE", headers });
 
@@ -320,11 +320,18 @@ export class WixApiService {
     return bodyJson as DeleteCollectionResponse;
   }
 
-  private buildAuthHeaders(apiKey: string): Record<string, string> {
+  private async buildAuthHeaders(
+    apiKey: string,
+  ): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
       Authorization: apiKey,
       Accept: "application/json",
     };
+
+    const appId = await this.wixIntegration.resolveAppId();
+    if (appId) {
+      headers["wix-app-id"] = appId;
+    }
 
     const siteId = this.config.get<string>("WIX_SITE_ID")?.trim();
     if (siteId) {
