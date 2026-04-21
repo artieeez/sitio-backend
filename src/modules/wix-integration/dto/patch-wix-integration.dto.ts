@@ -4,7 +4,7 @@ export class PatchWixIntegrationDto {
   @IsOptional()
   @IsString()
   @MaxLength(128)
-  appId?: string;
+  siteId?: string;
 
   @IsOptional()
   @IsString()

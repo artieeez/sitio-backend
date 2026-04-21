@@ -7,9 +7,8 @@ NestJS HTTP API for **Sítio** — feature **001-school-trip-payments** (school 
 | Variable        | Description |
 |-----------------|-------------|
 | `DATABASE_URL`  | PostgreSQL connection string for Prisma. Local dev typically uses host `localhost` port `5432`. Copy from `.env.example` and set user, password, and database name. |
-| `WIX_APP_ID`    | Optional. Overrides the Wix App ID from `WixIntegration` in the DB; sent as `wix-app-id` on Wix REST calls (`WixApiService`). |
 | `WIX_PRIVATE_API_KEY` | Optional. Overrides the private API key stored in `WixIntegration`. |
-| `WIX_SITE_ID`   | Optional. Sent as `wix-site-id` on Wix REST calls when set. |
+| `WIX_SITE_ID`   | Optional. Wix site GUID; sent as `wix-site-id` on Wix REST calls (`WixApiService`). Overrides `WixIntegration.siteId` from the DB when set. |
 
 Example:
 

@@ -4,7 +4,6 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import type {
   CreateCollectionRequest,
   CreateCollectionResponse,
@@ -30,10 +29,7 @@ const CATALOG_VERSION_KINDS: readonly WixCatalogVersionKind[] = [
 
 @Injectable()
 export class WixApiService {
-  constructor(
-    private readonly wixIntegration: WixIntegrationService,
-    private readonly config: ConfigService,
-  ) {}
+  constructor(private readonly wixIntegration: WixIntegrationService) {}
 
   /**
    * GET /stores-reader/v1/products/{id}
@@ -328,12 +324,7 @@ export class WixApiService {
       Accept: "application/json",
     };
 
-    const appId = await this.wixIntegration.resolveAppId();
-    if (appId) {
-      headers["wix-app-id"] = appId;
-    }
-
-    const siteId = this.config.get<string>("WIX_SITE_ID")?.trim();
+    const siteId = await this.wixIntegration.resolveSiteId();
     if (siteId) {
       headers["wix-site-id"] = siteId;
     }
