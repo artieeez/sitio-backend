@@ -108,3 +108,6 @@ export type CreateCollectionRequest = {
 export type CreateCollectionResponse = {
   collection: WixStoreCollection;
 };
+
+/** @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/delete-collection */
+export type DeleteCollectionResponse = Record<string, never>;

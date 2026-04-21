@@ -8,6 +8,7 @@ import { ConfigService } from "@nestjs/config";
 import type {
   CreateCollectionRequest,
   CreateCollectionResponse,
+  DeleteCollectionResponse,
   GetCatalogVersionResponse,
   GetProductOptions,
   GetProductResponse,
@@ -252,6 +253,71 @@ export class WixApiService {
     }
 
     return data as CreateCollectionResponse;
+  }
+
+  /**
+   * DELETE /stores/v1/collections/{id}
+   * @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/delete-collection
+   */
+  async deleteCollection(
+    collectionId: string,
+  ): Promise<DeleteCollectionResponse> {
+    const id = collectionId.trim();
+    if (!id) {
+      throw new BadGatewayException("Wix collection id is required");
+    }
+
+    const apiKey = await this.wixIntegration.resolvePrivateApiKey();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        "Wix API key is not configured (set WIX_PRIVATE_API_KEY or store privateApiKey in Wix integration settings)",
+      );
+    }
+
+    const url = new URL(
+      `${STORES_V1_BASE}/collections/${encodeURIComponent(id)}`,
+    );
+    const headers = this.buildAuthHeaders(apiKey);
+
+    const res = await fetch(url, { method: "DELETE", headers });
+
+    const bodyText = await res.text();
+    let bodyJson: unknown;
+    try {
+      bodyJson = bodyText.length > 0 ? JSON.parse(bodyText) : null;
+    } catch {
+      bodyJson = null;
+    }
+
+    if (res.status === 404) {
+      throw new NotFoundException(
+        typeof bodyJson === "object" && bodyJson !== null
+          ? JSON.stringify(bodyJson)
+          : "Wix collection not found",
+      );
+    }
+
+    if (!res.ok) {
+      throw new BadGatewayException(
+        `Wix deleteCollection failed (${res.status}): ${bodyText.slice(0, 2000)}`,
+      );
+    }
+
+    if (bodyText.length === 0) {
+      return {};
+    }
+
+    if (
+      typeof bodyJson !== "object" ||
+      bodyJson === null ||
+      Array.isArray(bodyJson)
+    ) {
+      throw new BadGatewayException(
+        "Wix deleteCollection returned an invalid body",
+      );
+    }
+
+    return bodyJson as DeleteCollectionResponse;
   }
 
   private buildAuthHeaders(apiKey: string): Record<string, string> {

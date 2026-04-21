@@ -1,0 +1,16 @@
+meta {
+  name: Delete Collection
+  type: http
+  seq: 11
+}
+
+delete {
+  url: {{wixStoresV1BaseUrl}}/collections/{{collectionId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+}
