@@ -1,0 +1,23 @@
+meta {
+  name: Query Products (minimal)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{wixStoresReaderBaseUrl}}/products/query
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "query": {}
+  }
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+  wix-site-id: {{wixSiteId}}
+}

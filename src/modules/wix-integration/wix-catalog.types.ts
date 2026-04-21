@@ -42,6 +42,8 @@ export type WixCatalogProduct = {
   media?: unknown;
   variants?: unknown[];
   manageVariants?: boolean;
+  /** Collection GUIDs this product belongs to (from query/list responses). */
+  collectionIds?: string[];
 };
 
 export type GetProductResponse = {
@@ -89,6 +91,32 @@ export type QueryCollectionsResponse = {
   metadata?: unknown;
   totalResults?: number;
   /** Present in some SDK-shaped responses. */
+  pagingMetadata?: unknown;
+  totalCount?: number;
+};
+
+/** @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/query-products */
+export type QueryProductsQuery = {
+  paging?: { limit?: number; offset?: number };
+  /** Wix API Query Language filter string (REST). */
+  filter?: string;
+  /** Sort string (REST). */
+  sort?: string;
+};
+
+export type QueryProductsRequest = {
+  query: QueryProductsQuery | Record<string, unknown>;
+  /** Hidden products; requires manage-products permissions. */
+  includeHiddenProducts?: boolean;
+  /** Requires manage-products permissions. */
+  includeMerchantSpecificData?: boolean;
+  includeVariants?: boolean;
+};
+
+export type QueryProductsResponse = {
+  products: WixCatalogProduct[];
+  metadata?: unknown;
+  totalResults?: number;
   pagingMetadata?: unknown;
   totalCount?: number;
 };

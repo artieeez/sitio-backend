@@ -1,0 +1,31 @@
+meta {
+  name: Query Products (by collection)
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{wixStoresReaderBaseUrl}}/products/query
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "query": {
+      "filter": "{\"collections.id\": {\"$in\": [\"{{collectionId}}\"]}}",
+      "sort": "[{\"name\": \"asc\"}]",
+      "paging": {
+        "limit": {{productsQueryLimit}},
+        "offset": 0
+      }
+    },
+    "includeVariants": false
+  }
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+  wix-site-id: {{wixSiteId}}
+}

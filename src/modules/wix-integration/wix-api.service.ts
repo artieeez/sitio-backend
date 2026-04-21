@@ -13,6 +13,8 @@ import type {
   GetProductResponse,
   QueryCollectionsRequest,
   QueryCollectionsResponse,
+  QueryProductsRequest,
+  QueryProductsResponse,
   WixCatalogVersionKind,
   WixStoreCollection,
 } from "./wix-catalog.types";
@@ -188,6 +190,59 @@ export class WixApiService {
     }
 
     return data as QueryCollectionsResponse;
+  }
+
+  /**
+   * POST /stores-reader/v1/products/query
+   * @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/query-products
+   *
+   * WQL examples (filter is a JSON string): e.g. products in a collection
+   * `JSON.stringify({ "collections.id": { $in: [collectionId] } })`.
+   */
+  async queryProducts(
+    body: QueryProductsRequest,
+  ): Promise<QueryProductsResponse> {
+    const apiKey = await this.wixIntegration.resolvePrivateApiKey();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        "Wix API key is not configured (set WIX_PRIVATE_API_KEY or store privateApiKey in Wix integration settings)",
+      );
+    }
+
+    const url = new URL(`${STORES_READER_BASE}/products/query`);
+    const headers: Record<string, string> = {
+      ...(await this.buildAuthHeaders(apiKey)),
+      "Content-Type": "application/json",
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const bodyText = await res.text();
+    let bodyJson: unknown;
+    try {
+      bodyJson = bodyText.length > 0 ? JSON.parse(bodyText) : null;
+    } catch {
+      bodyJson = null;
+    }
+
+    if (!res.ok) {
+      throw new BadGatewayException(
+        `Wix queryProducts failed (${res.status}): ${bodyText.slice(0, 2000)}`,
+      );
+    }
+
+    const data = bodyJson as Partial<QueryProductsResponse> | null;
+    if (!data || !Array.isArray(data.products)) {
+      throw new BadGatewayException(
+        "Wix queryProducts returned an invalid body",
+      );
+    }
+
+    return data as QueryProductsResponse;
   }
 
   /**

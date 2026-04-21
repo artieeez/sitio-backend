@@ -50,7 +50,7 @@ pnpm run format      # Biome format only
 
 ## Wix API exploration (Bruno)
 
-Manual calls to Wix REST endpoints (before implementing them in Nest) live in **`bruno/wix-api/`**. Open that folder as a [Bruno](https://www.usebruno.com/) collection; see `bruno/wix-api/README.md`. Implemented in code: `WixApiService` (`getProduct`, `getCatalogVersion`, `queryCollections`, `createCollection`, `deleteCollection`).
+Manual calls to Wix REST endpoints (before implementing them in Nest) live in **`bruno/wix-api/`**. Open that folder as a [Bruno](https://www.usebruno.com/) collection; see `bruno/wix-api/README.md`. Implemented in code: `WixApiService` (`getProduct`, `getCatalogVersion`, `queryCollections`, `queryProducts`, `createCollection`, `deleteCollection`).
 
 ## Design references
 
