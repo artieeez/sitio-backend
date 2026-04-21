@@ -6,12 +6,21 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type {
+  GetCatalogVersionResponse,
   GetProductOptions,
   GetProductResponse,
+  WixCatalogVersionKind,
 } from "./wix-catalog.types";
 import { WixIntegrationService } from "./wix-integration.service";
 
 const STORES_READER_BASE = "https://www.wixapis.com/stores-reader/v1";
+const STORES_V3_PROVISION_BASE = "https://www.wixapis.com/stores/v3/provision";
+
+const CATALOG_VERSION_KINDS: readonly WixCatalogVersionKind[] = [
+  "V1_CATALOG",
+  "V3_CATALOG",
+  "STORES_NOT_INSTALLED",
+];
 
 @Injectable()
 export class WixApiService {
@@ -82,6 +91,50 @@ export class WixApiService {
     }
 
     return data as GetProductResponse;
+  }
+
+  /**
+   * GET /stores/v3/provision/version
+   * @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-versioning/get-catalog-version
+   */
+  async getCatalogVersion(): Promise<GetCatalogVersionResponse> {
+    const apiKey = await this.wixIntegration.resolvePrivateApiKey();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        "Wix API key is not configured (set WIX_PRIVATE_API_KEY or store privateApiKey in Wix integration settings)",
+      );
+    }
+
+    const url = new URL(`${STORES_V3_PROVISION_BASE}/version`);
+    const headers = this.buildAuthHeaders(apiKey);
+    const res = await fetch(url, { method: "GET", headers });
+
+    const bodyText = await res.text();
+    let bodyJson: unknown;
+    try {
+      bodyJson = bodyText.length > 0 ? JSON.parse(bodyText) : null;
+    } catch {
+      bodyJson = null;
+    }
+
+    if (!res.ok) {
+      throw new BadGatewayException(
+        `Wix getCatalogVersion failed (${res.status}): ${bodyText.slice(0, 2000)}`,
+      );
+    }
+
+    const data = bodyJson as Partial<GetCatalogVersionResponse> | null;
+    const v = data?.catalogVersion;
+    if (
+      typeof v !== "string" ||
+      !CATALOG_VERSION_KINDS.includes(v as WixCatalogVersionKind)
+    ) {
+      throw new BadGatewayException(
+        "Wix getCatalogVersion returned an invalid body",
+      );
+    }
+
+    return { catalogVersion: v as WixCatalogVersionKind };
   }
 
   private buildAuthHeaders(apiKey: string): Record<string, string> {

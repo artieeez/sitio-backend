@@ -1,0 +1,16 @@
+meta {
+  name: Get Catalog Version
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{wixStoresV3ProvisionBaseUrl}}/version
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+}

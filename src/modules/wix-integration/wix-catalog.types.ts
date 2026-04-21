@@ -47,3 +47,13 @@ export type WixCatalogProduct = {
 export type GetProductResponse = {
   product: WixCatalogProduct;
 };
+
+/** @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-versioning/get-catalog-version */
+export type WixCatalogVersionKind =
+  | "V1_CATALOG"
+  | "V3_CATALOG"
+  | "STORES_NOT_INSTALLED";
+
+export type GetCatalogVersionResponse = {
+  catalogVersion: WixCatalogVersionKind;
+};
