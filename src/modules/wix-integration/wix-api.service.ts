@@ -9,6 +9,8 @@ import type {
   GetCatalogVersionResponse,
   GetProductOptions,
   GetProductResponse,
+  QueryCollectionsRequest,
+  QueryCollectionsResponse,
   WixCatalogVersionKind,
 } from "./wix-catalog.types";
 import { WixIntegrationService } from "./wix-integration.service";
@@ -135,6 +137,56 @@ export class WixApiService {
     }
 
     return { catalogVersion: v as WixCatalogVersionKind };
+  }
+
+  /**
+   * POST /stores-reader/v1/collections/query
+   * @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/query-collections
+   */
+  async queryCollections(
+    body: QueryCollectionsRequest,
+  ): Promise<QueryCollectionsResponse> {
+    const apiKey = await this.wixIntegration.resolvePrivateApiKey();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        "Wix API key is not configured (set WIX_PRIVATE_API_KEY or store privateApiKey in Wix integration settings)",
+      );
+    }
+
+    const url = new URL(`${STORES_READER_BASE}/collections/query`);
+    const headers: Record<string, string> = {
+      ...this.buildAuthHeaders(apiKey),
+      "Content-Type": "application/json",
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body),
+    });
+
+    const bodyText = await res.text();
+    let bodyJson: unknown;
+    try {
+      bodyJson = bodyText.length > 0 ? JSON.parse(bodyText) : null;
+    } catch {
+      bodyJson = null;
+    }
+
+    if (!res.ok) {
+      throw new BadGatewayException(
+        `Wix queryCollections failed (${res.status}): ${bodyText.slice(0, 2000)}`,
+      );
+    }
+
+    const data = bodyJson as Partial<QueryCollectionsResponse> | null;
+    if (!data || !Array.isArray(data.collections)) {
+      throw new BadGatewayException(
+        "Wix queryCollections returned an invalid body",
+      );
+    }
+
+    return data as QueryCollectionsResponse;
   }
 
   private buildAuthHeaders(apiKey: string): Record<string, string> {

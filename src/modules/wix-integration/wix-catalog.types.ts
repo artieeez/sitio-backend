@@ -57,3 +57,38 @@ export type WixCatalogVersionKind =
 export type GetCatalogVersionResponse = {
   catalogVersion: WixCatalogVersionKind;
 };
+
+/** @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/query-collections */
+export type QueryCollectionsQuery = {
+  paging?: { limit?: number; offset?: number };
+  /** Wix API Query Language filter string (REST). */
+  filter?: string;
+  /** Sort string (REST). */
+  sort?: string;
+};
+
+export type QueryCollectionsRequest = {
+  query: QueryCollectionsQuery | Record<string, unknown>;
+  includeDescription?: boolean;
+  includeNumberOfProducts?: boolean;
+};
+
+export type WixStoreCollection = {
+  id?: string;
+  _id?: string;
+  name?: string;
+  slug?: string;
+  visible?: boolean;
+  description?: string | null;
+  numberOfProducts?: number;
+  media?: unknown;
+};
+
+export type QueryCollectionsResponse = {
+  collections: WixStoreCollection[];
+  metadata?: unknown;
+  totalResults?: number;
+  /** Present in some SDK-shaped responses. */
+  pagingMetadata?: unknown;
+  totalCount?: number;
+};

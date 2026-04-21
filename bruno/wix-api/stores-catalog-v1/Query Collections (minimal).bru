@@ -1,0 +1,22 @@
+meta {
+  name: Query Collections (minimal)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{wixStoresReaderBaseUrl}}/collections/query
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "query": {}
+  }
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+}
