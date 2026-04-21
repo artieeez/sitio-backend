@@ -92,3 +92,19 @@ export type QueryCollectionsResponse = {
   pagingMetadata?: unknown;
   totalCount?: number;
 };
+
+/** @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/create-collection */
+export type CreateCollectionCollectionInput = {
+  name: string;
+  description?: string;
+  slug?: string;
+  visible?: boolean;
+};
+
+export type CreateCollectionRequest = {
+  collection: CreateCollectionCollectionInput;
+};
+
+export type CreateCollectionResponse = {
+  collection: WixStoreCollection;
+};

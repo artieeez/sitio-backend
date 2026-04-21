@@ -6,6 +6,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type {
+  CreateCollectionRequest,
+  CreateCollectionResponse,
   GetCatalogVersionResponse,
   GetProductOptions,
   GetProductResponse,
@@ -16,6 +18,7 @@ import type {
 import { WixIntegrationService } from "./wix-integration.service";
 
 const STORES_READER_BASE = "https://www.wixapis.com/stores-reader/v1";
+const STORES_V1_BASE = "https://www.wixapis.com/stores/v1";
 const STORES_V3_PROVISION_BASE = "https://www.wixapis.com/stores/v3/provision";
 
 const CATALOG_VERSION_KINDS: readonly WixCatalogVersionKind[] = [
@@ -187,6 +190,68 @@ export class WixApiService {
     }
 
     return data as QueryCollectionsResponse;
+  }
+
+  /**
+   * POST /stores/v1/collections
+   * @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/create-collection
+   */
+  async createCollection(
+    body: CreateCollectionRequest,
+  ): Promise<CreateCollectionResponse> {
+    const name = body.collection?.name?.trim();
+    if (!name) {
+      throw new BadGatewayException("Wix collection name is required");
+    }
+
+    const apiKey = await this.wixIntegration.resolvePrivateApiKey();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        "Wix API key is not configured (set WIX_PRIVATE_API_KEY or store privateApiKey in Wix integration settings)",
+      );
+    }
+
+    const url = new URL(`${STORES_V1_BASE}/collections`);
+    const headers: Record<string, string> = {
+      ...this.buildAuthHeaders(apiKey),
+      "Content-Type": "application/json",
+    };
+
+    const payload: CreateCollectionRequest = {
+      collection: {
+        ...body.collection,
+        name,
+      },
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    const bodyText = await res.text();
+    let bodyJson: unknown;
+    try {
+      bodyJson = bodyText.length > 0 ? JSON.parse(bodyText) : null;
+    } catch {
+      bodyJson = null;
+    }
+
+    if (!res.ok) {
+      throw new BadGatewayException(
+        `Wix createCollection failed (${res.status}): ${bodyText.slice(0, 2000)}`,
+      );
+    }
+
+    const data = bodyJson as Partial<CreateCollectionResponse> | null;
+    if (!data?.collection || typeof data.collection !== "object") {
+      throw new BadGatewayException(
+        "Wix createCollection returned an invalid body",
+      );
+    }
+
+    return data as CreateCollectionResponse;
   }
 
   private buildAuthHeaders(apiKey: string): Record<string, string> {

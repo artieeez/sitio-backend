@@ -1,0 +1,25 @@
+meta {
+  name: Create Collection (with wix-site-id)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{wixStoresV1BaseUrl}}/collections
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "collection": {
+      "name": "{{newCollectionName}}"
+    }
+  }
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+  wix-site-id: {{wixSiteId}}
+}
