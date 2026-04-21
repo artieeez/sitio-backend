@@ -1,0 +1,26 @@
+meta {
+  name: Generate File Upload URL
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{wixSiteMediaV1BaseUrl}}/files/generate-upload-url
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "mimeType": "{{wixMediaMimeType}}",
+    "fileName": "{{wixMediaUploadFileName}}",
+    "sizeInBytes": {{wixMediaSizeInBytes}},
+    "private": false
+  }
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+  wix-site-id: {{wixSiteId}}
+}

@@ -8,6 +8,8 @@ import type {
   CreateCollectionRequest,
   CreateCollectionResponse,
   DeleteCollectionResponse,
+  GenerateFileUploadUrlRequest,
+  GenerateFileUploadUrlResponse,
   GetCatalogVersionResponse,
   GetProductOptions,
   GetProductResponse,
@@ -23,6 +25,7 @@ import { WixIntegrationService } from "./wix-integration.service";
 const STORES_READER_BASE = "https://www.wixapis.com/stores-reader/v1";
 const STORES_V1_BASE = "https://www.wixapis.com/stores/v1";
 const STORES_V3_PROVISION_BASE = "https://www.wixapis.com/stores/v3/provision";
+const SITE_MEDIA_V1_BASE = "https://www.wixapis.com/site-media/v1";
 
 const CATALOG_VERSION_KINDS: readonly WixCatalogVersionKind[] = [
   "V1_CATALOG",
@@ -459,6 +462,71 @@ export class WixApiService {
     }
 
     return bodyJson as DeleteCollectionResponse;
+  }
+
+  /**
+   * POST /site-media/v1/files/generate-upload-url
+   * Scope: `SCOPE.DC-MEDIA.MANAGE-MEDIAMANAGER` (Manage Media Manager).
+   * @see https://dev.wix.com/docs/api-reference/assets/media/media-manager/files/generate-file-upload-url
+   */
+  async generateFileUploadUrl(
+    body: GenerateFileUploadUrlRequest,
+  ): Promise<GenerateFileUploadUrlResponse> {
+    const mimeType = body.mimeType?.trim();
+    if (!mimeType) {
+      throw new BadGatewayException("Wix generateFileUploadUrl: mimeType is required");
+    }
+
+    const apiKey = await this.wixIntegration.resolvePrivateApiKey();
+    if (!apiKey) {
+      throw new ServiceUnavailableException(
+        "Wix API key is not configured (set WIX_PRIVATE_API_KEY or store privateApiKey in Wix integration settings)",
+      );
+    }
+
+    const url = new URL(`${SITE_MEDIA_V1_BASE}/files/generate-upload-url`);
+    const headers: Record<string, string> = {
+      ...(await this.buildAuthHeaders(apiKey)),
+      "Content-Type": "application/json",
+    };
+
+    const payload: GenerateFileUploadUrlRequest = {
+      ...body,
+      mimeType,
+    };
+
+    const res = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    const bodyText = await res.text();
+    let bodyJson: unknown;
+    try {
+      bodyJson = bodyText.length > 0 ? JSON.parse(bodyText) : null;
+    } catch {
+      bodyJson = null;
+    }
+
+    if (!res.ok) {
+      throw new BadGatewayException(
+        `Wix generateFileUploadUrl failed (${res.status}): ${bodyText.slice(0, 2000)}`,
+      );
+    }
+
+    const data = bodyJson as Partial<GenerateFileUploadUrlResponse> | null;
+    if (
+      !data ||
+      typeof data.uploadUrl !== "string" ||
+      data.uploadUrl.length === 0
+    ) {
+      throw new BadGatewayException(
+        "Wix generateFileUploadUrl returned an invalid body",
+      );
+    }
+
+    return { uploadUrl: data.uploadUrl };
   }
 
   private async buildAuthHeaders(

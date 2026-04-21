@@ -139,3 +139,27 @@ export type CreateCollectionResponse = {
 
 /** @see https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/delete-collection */
 export type DeleteCollectionResponse = Record<string, never>;
+
+/** @see https://dev.wix.com/docs/api-reference/assets/media/media-manager/files/generate-file-upload-url */
+export type WixMediaExternalInfo = {
+  origin?: string;
+  externalIds?: string[];
+};
+
+/** @see https://dev.wix.com/docs/api-reference/assets/media/media-manager/files/generate-file-upload-url */
+export type GenerateFileUploadUrlRequest = {
+  mimeType: string;
+  externalInfo?: WixMediaExternalInfo;
+  fileName?: string;
+  filePath?: string;
+  labels?: string[];
+  parentFolderId?: string;
+  private?: boolean;
+  /** File size in bytes (REST may accept numeric or string in some clients). */
+  sizeInBytes?: number | string;
+};
+
+/** @see https://dev.wix.com/docs/api-reference/assets/media/media-manager/files/generate-file-upload-url */
+export type GenerateFileUploadUrlResponse = {
+  uploadUrl: string;
+};

@@ -25,6 +25,10 @@ In Bruno, select environment **Local** and set:
 | `productsQueryLimit` | Page size for **Query Products (by collection)** (default `20`). |
 | `wixStoresV3ProvisionBaseUrl` | Default `https://www.wixapis.com/stores/v3/provision` for **Get Catalog Version** (`GET .../version`). |
 | `wixStoresV3ProductsBaseUrl` | Default `https://www.wixapis.com/stores/v3/products` for **Catalog V3 Get Product** (`GET .../products/{productId}`). |
+| `wixSiteMediaV1BaseUrl` | Default `https://www.wixapis.com/site-media/v1` for **Generate File Upload URL** (`POST .../files/generate-upload-url`). |
+| `wixMediaMimeType` | `mimeType` for that request (e.g. `image/jpeg`). |
+| `wixMediaUploadFileName` | Optional display / type hint filename (e.g. `T-shirt.jpg`). |
+| `wixMediaSizeInBytes` | Optional file size in bytes (number). |
 
 **Do not commit real secrets.** Prefer Bruno’s secret variables or keep keys only in your local Bruno app.
 
@@ -39,6 +43,7 @@ All requests below include the **`wix-site-id`** header.
 - **stores-catalog-v1 / Delete Collection** — [`deleteCollection`](https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v1/catalog/delete-collection): `DELETE /stores/v1/collections/{id}` (same scope). Response body is an empty JSON object.
 - **stores-provision-v3 / Get Catalog Version** — [`getCatalogVersion`](https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-versioning/get-catalog-version): `GET /stores/v3/provision/version` (scope `STORES.CATALOG_READ_LIMITED`).
 - **stores-catalog-v3 / Get Product** — [`getProduct` (Catalog V3)](https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v3/products-v3/get-product): `GET /stores/v3/products/{productId}`. Scopes: `STORES.PRODUCT_READ` (and `PRODUCT_READ_ADMIN` for non-visible products / merchant fields). Add a `fields` query in Bruno if you need specific projection.
+- **site-media-v1 / Generate File Upload URL** — [`generateFileUploadUrl`](https://dev.wix.com/docs/api-reference/assets/media/media-manager/files/generate-file-upload-url): `POST /site-media/v1/files/generate-upload-url` (scope `SCOPE.DC-MEDIA.MANAGE-MEDIAMANAGER`). Body requires `mimeType`; optional `fileName`, `filePath`, `parentFolderId`, `private`, `labels`, `externalInfo`, `sizeInBytes`. Response includes `uploadUrl` for the client upload step (see Wix [Upload API](https://dev.wix.com/docs/rest/assets/media/media-manager/files/upload-api.md)).
 
 Add more `.bru` files under new folders as you explore additional Wix APIs.
 
