@@ -6,16 +6,18 @@ import type { PatchWixIntegrationDto } from "./dto/patch-wix-integration.dto";
 export type WixIntegrationSettingsResponse = {
   /** Full value for webhook verification setup (not masked). */
   publicKey: string | null;
-  /** Private key is never returned; only a short prefix for recognition. */
+  /** Private key is never returned in full; first 10 characters for recognition. */
   privateApiKeyPrefix: string | null;
 };
 
 /** Single row for the whole tenant (see Prisma model `WixIntegration`). */
 const WIX_INTEGRATION_SINGLETON_ID = 1;
 
+const PRIVATE_KEY_PREFIX_LEN = 10;
+
 function keyPrefix(value: string | null | undefined): string | null {
   if (value == null || value.length === 0) return null;
-  return value.slice(0, 4);
+  return value.slice(0, PRIVATE_KEY_PREFIX_LEN);
 }
 
 function normalizeKeyInput(value: string): string | null {
