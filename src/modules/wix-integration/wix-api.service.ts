@@ -245,18 +245,18 @@ export class WixApiService {
     return data as QueryProductsResponse;
   }
 
+  /** Default autocomplete when the user has not typed a prefix: most recently updated in collection. */
+  private static readonly PRODUCT_AUTOCOMPLETE_RECENT_LIMIT = 5;
+
   /**
    * Products in `collectionId` whose `name` starts with `prefix` (case-insensitive).
-   * Uses a collection filter plus client-side prefix match (max 50 scanned, 20 returned).
+   * Empty `prefix`: the five most recently updated products in the collection (Wix `lastUpdated` desc).
+   * Non-empty prefix: collection filter plus client-side prefix match (max 50 scanned, 20 returned).
    */
   async searchProductsInCollectionByPrefix(
     collectionId: string,
     prefix: string,
   ): Promise<QueryProductsResponse> {
-    const p = prefix.trim().toLowerCase();
-    if (p.length === 0) {
-      return { products: [] };
-    }
     const id = collectionId.trim();
     if (!id) {
       throw new BadGatewayException("Wix collection id is required");
@@ -264,6 +264,20 @@ export class WixApiService {
     const filter = JSON.stringify({
       "collections.id": { $in: [id] },
     });
+    const p = prefix.trim().toLowerCase();
+    if (p.length === 0) {
+      return this.queryProducts({
+        query: {
+          filter,
+          sort: '[{"lastUpdated":"desc"}]',
+          paging: {
+            limit: WixApiService.PRODUCT_AUTOCOMPLETE_RECENT_LIMIT,
+            offset: 0,
+          },
+        },
+        includeVariants: false,
+      });
+    }
     const res = await this.queryProducts({
       query: {
         filter,

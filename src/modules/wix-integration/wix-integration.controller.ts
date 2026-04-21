@@ -39,7 +39,7 @@ export class WixIntegrationController {
     return this.wixIntegration.patchSettings(dto);
   }
 
-  /** Autocomplete: products in the school’s Wix collection by name prefix (`queryProducts`). */
+  /** Autocomplete: products in the school’s Wix collection by name prefix; empty prefix returns the five most recently updated in that collection. */
   @Get("products/autocomplete")
   async productsAutocomplete(
     @Query("schoolId", new ParseUUIDPipe()) schoolId: string,
