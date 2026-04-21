@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { CqrsModule } from "@nestjs/cqrs";
 import { PrismaModule } from "../../prisma/prisma.module";
+import { WixIntegrationModule } from "../wix-integration/wix-integration.module";
 import {
   CreateSchoolHandler,
   DeactivateSchoolHandler,
@@ -10,7 +11,7 @@ import { SchoolController } from "./school.controller";
 import { GetSchoolHandler, ListSchoolsHandler } from "./school.query-handlers";
 
 @Module({
-  imports: [CqrsModule, PrismaModule],
+  imports: [CqrsModule, PrismaModule, WixIntegrationModule],
   controllers: [SchoolController],
   providers: [
     CreateSchoolHandler,
