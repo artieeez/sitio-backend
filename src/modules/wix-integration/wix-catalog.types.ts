@@ -44,6 +44,8 @@ export type WixCatalogProduct = {
   manageVariants?: boolean;
   /** Collection GUIDs this product belongs to (from query/list responses). */
   collectionIds?: string[];
+  /** Full storefront URL is usually `{ base, path }` from getProduct, not a plain string. */
+  productPageUrl?: string | { base?: string; path?: string };
 };
 
 export type GetProductResponse = {

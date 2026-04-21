@@ -71,17 +71,87 @@ function minorFromPriceData(
   return Math.round(pd.price * 100);
 }
 
-/** Prefer explicit URL fields returned by Wix when present. */
+/** Prefer explicit URL fields returned by Wix Stores reader (shape varies by catalog version). */
 function productPageUrlFromProduct(p: WixCatalogProduct): string | null {
   const raw = p as Record<string, unknown>;
-  const direct =
-    raw.productPageUrl ??
-    raw.productPageURL ??
-    raw.url ??
-    raw.pageUrl;
-  if (typeof direct === "string" && direct.trim().length > 0) {
-    return direct.trim();
+  const tryString = (v: unknown): string | null => {
+    if (typeof v === "string" && v.trim().length > 0) {
+      return v.trim();
+    }
+    return null;
+  };
+
+  /** Wix catalog v1 returns `productPageUrl` as `PageUrl`: `{ base, path }`, not a single string. */
+  const pageUrlField = raw.productPageUrl;
+  if (pageUrlField && typeof pageUrlField === "object" && !Array.isArray(pageUrlField)) {
+    const u = pageUrlField as Record<string, unknown>;
+    const baseRaw = u.base;
+    const pathRaw = u.path;
+    const base = typeof baseRaw === "string" ? baseRaw.trim().replace(/\/+$/, "") : "";
+    const path = typeof pathRaw === "string" ? pathRaw.trim() : "";
+    if (base && path) {
+      const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+      return `${base}${normalizedPath}`;
+    }
+    if (base) {
+      return base;
+    }
+    if (path && /^https?:\/\//i.test(path)) {
+      return path;
+    }
   }
+
+  const flatCandidates: unknown[] = [
+    raw.productPageUrl,
+    raw.productPageURL,
+    raw.productUrl,
+    raw.onlineStoreUrl,
+    raw.url,
+    raw.pageUrl,
+    raw.absoluteUrl,
+    raw.shortenedUrl,
+    raw.externalUrl,
+  ];
+  for (const c of flatCandidates) {
+    const s = tryString(c);
+    if (s) {
+      return s;
+    }
+  }
+
+  const nav = raw.navigation;
+  if (nav && typeof nav === "object") {
+    const n = nav as Record<string, unknown>;
+    const fromNav =
+      tryString(n.itemUrl) ??
+      tryString(n.url) ??
+      tryString(n.targetUrl) ??
+      tryString(n.desktopUri);
+    if (fromNav) {
+      return fromNav;
+    }
+  }
+
+  const customUrls = raw.customUrls;
+  if (customUrls && typeof customUrls === "object" && !Array.isArray(customUrls)) {
+    const cu = customUrls as Record<string, unknown>;
+    const fromCu =
+      tryString(cu.main) ??
+      tryString(cu.base) ??
+      tryString(cu.productPage);
+    if (fromCu) {
+      return fromCu;
+    }
+  }
+
+  const seo = raw.seoData;
+  if (seo && typeof seo === "object") {
+    const s = tryString((seo as Record<string, unknown>).canonicalUrl);
+    if (s) {
+      return s;
+    }
+  }
+
   return null;
 }
 

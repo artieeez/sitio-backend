@@ -113,6 +113,12 @@ export class UpdateTripHandler implements ICommandHandler<UpdateTripCommand> {
       where: { id: tripId },
       data: {
         ...(dto.description !== undefined && { description: dto.description }),
+        ...(dto.title !== undefined && {
+          title: dto.title != null && dto.title.trim() !== "" ? dto.title.trim() : null,
+        }),
+        ...(dto.defaultExpectedAmountMinor !== undefined && {
+          defaultExpectedAmountMinor: dto.defaultExpectedAmountMinor,
+        }),
         ...(dto.active !== undefined && { active: dto.active }),
         ...(dto.imageUrl !== undefined && {
           imageUrl:
