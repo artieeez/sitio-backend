@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { PrismaService } from "../../prisma/prisma.service";
 import { WixApiService } from "../wix-integration/wix-api.service";
 import type { SchoolCreateDto } from "./dto/school-create.dto";
+import type { SchoolUpdateDto } from "./dto/school-update.dto";
 import {
   CreateSchoolCommand,
   DeactivateSchoolCommand,
@@ -28,6 +29,29 @@ function deriveWixCollectionNameForCreate(dto: SchoolCreateDto): string {
     return title.slice(0, MAX_WIX_COLLECTION_NAME_LEN);
   }
   return `School-${randomUUID()}`;
+}
+
+function deriveWixCollectionNameForUpdate(
+  dto: SchoolUpdateDto,
+  existingTitle: string | null,
+): string {
+  const title =
+    dto.title !== undefined ? dto.title : existingTitle;
+  const t = title?.trim();
+  if (t && t.length > 0) {
+    return t.slice(0, MAX_WIX_COLLECTION_NAME_LEN);
+  }
+  return `School-${randomUUID()}`;
+}
+
+function mergedDescriptionForWixCollection(
+  dtoDescription: SchoolUpdateDto["description"],
+  existingDescription: string | null,
+): string | undefined {
+  const raw =
+    dtoDescription !== undefined ? dtoDescription : existingDescription;
+  const d = raw?.trim();
+  return d && d.length > 0 ? d.slice(0, 8000) : undefined;
 }
 
 function wixCollectionIdFromCreatedCollection(
@@ -88,17 +112,52 @@ export class CreateSchoolHandler
 export class UpdateSchoolHandler
   implements ICommandHandler<UpdateSchoolCommand>
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly wixApi: WixApiService,
+  ) {}
 
   async execute(command: UpdateSchoolCommand) {
     const { schoolId, dto } = command;
+    const existing = await this.prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+    if (!existing) {
+      throw new NotFoundException({
+        message: "School not found",
+        code: "NOT_FOUND",
+      });
+    }
+
+    const mergedWix =
+      dto.wixCollectionId !== undefined
+        ? normalizeWixCollectionId(dto.wixCollectionId)
+        : existing.wixCollectionId;
+
+    let wixCollectionId = mergedWix;
+    if (wixCollectionId === null) {
+      const desc = mergedDescriptionForWixCollection(
+        dto.description,
+        existing.description,
+      );
+      const created = await this.wixApi.createCollection({
+        collection: {
+          name: deriveWixCollectionNameForUpdate(dto, existing.title),
+          ...(desc ? { description: desc } : {}),
+        },
+      });
+      wixCollectionId = wixCollectionIdFromCreatedCollection(
+        created.collection,
+      );
+    }
+
     try {
       const school = await this.prisma.school.update({
         where: { id: schoolId },
         data: {
-          ...(dto.wixCollectionId !== undefined && {
-            wixCollectionId: normalizeWixCollectionId(dto.wixCollectionId),
-          }),
+          ...(dto.wixCollectionId !== undefined || mergedWix === null
+            ? { wixCollectionId }
+            : {}),
           ...(dto.url !== undefined && { url: dto.url }),
           ...(dto.title !== undefined && { title: dto.title }),
           ...(dto.description !== undefined && {
