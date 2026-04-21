@@ -18,6 +18,7 @@ import {
   DeactivateSchoolCommand,
   UpdateSchoolCommand,
 } from "./school.commands";
+import { SchoolDeletionService } from "./school-deletion.service";
 import { GetSchoolQuery, ListSchoolsQuery } from "./school.queries";
 
 @Controller("schools")
@@ -25,6 +26,7 @@ export class SchoolController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    private readonly schoolDeletionService: SchoolDeletionService,
   ) {}
 
   @Get()
@@ -37,6 +39,13 @@ export class SchoolController {
   @Post()
   create(@Body() dto: SchoolCreateDto) {
     return this.commandBus.execute(new CreateSchoolCommand(dto));
+  }
+
+  @Get(":schoolId/deactivate-eligibility")
+  getDeactivateEligibility(
+    @Param("schoolId", ParseUUIDPipe) schoolId: string,
+  ) {
+    return this.schoolDeletionService.getDeactivateEligibility(schoolId);
   }
 
   @Get(":schoolId")

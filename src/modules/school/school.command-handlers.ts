@@ -10,6 +10,7 @@ import {
   DeactivateSchoolCommand,
   UpdateSchoolCommand,
 } from "./school.commands";
+import { SchoolDeletionService } from "./school-deletion.service";
 import { mapSchool } from "./school.mapper";
 
 function normalizeWixCollectionId(
@@ -182,20 +183,9 @@ export class UpdateSchoolHandler
 export class DeactivateSchoolHandler
   implements ICommandHandler<DeactivateSchoolCommand>
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly schoolDeletion: SchoolDeletionService) {}
 
   async execute(command: DeactivateSchoolCommand): Promise<void> {
-    const { schoolId } = command;
-    try {
-      await this.prisma.school.update({
-        where: { id: schoolId },
-        data: { active: false },
-      });
-    } catch {
-      throw new NotFoundException({
-        message: "School not found",
-        code: "NOT_FOUND",
-      });
-    }
+    await this.schoolDeletion.deactivateSchool(command.schoolId);
   }
 }

@@ -7,6 +7,7 @@ import {
   DeactivateSchoolHandler,
   UpdateSchoolHandler,
 } from "./school.command-handlers";
+import { SchoolDeletionService } from "./school-deletion.service";
 import { SchoolController } from "./school.controller";
 import { GetSchoolHandler, ListSchoolsHandler } from "./school.query-handlers";
 
@@ -14,6 +15,7 @@ import { GetSchoolHandler, ListSchoolsHandler } from "./school.query-handlers";
   imports: [CqrsModule, PrismaModule, WixIntegrationModule],
   controllers: [SchoolController],
   providers: [
+    SchoolDeletionService,
     CreateSchoolHandler,
     UpdateSchoolHandler,
     DeactivateSchoolHandler,
