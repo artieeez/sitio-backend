@@ -19,6 +19,8 @@ That page lists **which fields support filtering** (and allowed operators) for *
 
 Broader query-language rules: [Wix API Query Language](https://dev.wix.com/api/rest/getting-started/api-query-language) (linked from the article above).
 
+**Free-text search** (WQL **`search`**, not **`filter`**) — see [About the Wix API Query Language](https://dev.wix.com/docs/api-reference/articles/work-with-wix-apis/data-retrieval/about-the-wix-api-query-language.md) and the repo skill **`wix-api-query-language-search`**.
+
 ## Implementation reminders
 
 - REST bodies typically pass **`filter` and `sort` as strings** containing JSON (see examples on the doc page), not always as raw objects—match the endpoint’s schema and working Bruno examples in this repo.
