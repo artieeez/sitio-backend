@@ -1,9 +1,12 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "../../prisma/prisma.service";
 import type { PatchWixIntegrationDto } from "./dto/patch-wix-integration.dto";
 
 export type WixIntegrationSettingsResponse = {
-  publicKeyPrefix: string | null;
+  /** Full value for webhook verification setup (not masked). */
+  publicKey: string | null;
+  /** Private key is never returned; only a short prefix for recognition. */
   privateApiKeyPrefix: string | null;
 };
 
@@ -22,17 +25,36 @@ function normalizeKeyInput(value: string): string | null {
 
 @Injectable()
 export class WixIntegrationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+  ) {}
+
+  /**
+   * Resolves the secret used for Wix REST calls (`WixApiService`).
+   * Prefer `WIX_PRIVATE_API_KEY` in env when set; otherwise the DB value from settings.
+   */
+  async resolvePrivateApiKey(): Promise<string | null> {
+    const fromEnv = this.config.get<string>("WIX_PRIVATE_API_KEY")?.trim();
+    if (fromEnv && fromEnv.length > 0) {
+      return fromEnv;
+    }
+    const row = await this.prisma.wixIntegration.findUnique({
+      where: { id: WIX_INTEGRATION_SINGLETON_ID },
+    });
+    const fromDb = row?.privateApiKey?.trim();
+    return fromDb && fromDb.length > 0 ? fromDb : null;
+  }
 
   async getSettings(): Promise<WixIntegrationSettingsResponse> {
     const row = await this.prisma.wixIntegration.findUnique({
       where: { id: WIX_INTEGRATION_SINGLETON_ID },
     });
     if (!row) {
-      return { publicKeyPrefix: null, privateApiKeyPrefix: null };
+      return { publicKey: null, privateApiKeyPrefix: null };
     }
     return {
-      publicKeyPrefix: keyPrefix(row.publicKey),
+      publicKey: row.publicKey?.trim() ? row.publicKey.trim() : null,
       privateApiKeyPrefix: keyPrefix(row.privateApiKey),
     };
   }

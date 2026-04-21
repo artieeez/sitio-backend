@@ -5,19 +5,18 @@ import {
   ServiceUnavailableException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { PrismaService } from "../../prisma/prisma.service";
 import type {
   GetProductOptions,
   GetProductResponse,
 } from "./wix-catalog.types";
+import { WixIntegrationService } from "./wix-integration.service";
 
 const STORES_READER_BASE = "https://www.wixapis.com/stores-reader/v1";
-const WIX_INTEGRATION_SINGLETON_ID = 1;
 
 @Injectable()
 export class WixApiService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly wixIntegration: WixIntegrationService,
     private readonly config: ConfigService,
   ) {}
 
@@ -34,7 +33,7 @@ export class WixApiService {
       throw new BadGatewayException("Wix product id is required");
     }
 
-    const apiKey = await this.resolvePrivateApiKey();
+    const apiKey = await this.wixIntegration.resolvePrivateApiKey();
     if (!apiKey) {
       throw new ServiceUnavailableException(
         "Wix API key is not configured (set WIX_PRIVATE_API_KEY or store privateApiKey in Wix integration settings)",
@@ -83,19 +82,6 @@ export class WixApiService {
     }
 
     return data as GetProductResponse;
-  }
-
-  private async resolvePrivateApiKey(): Promise<string | null> {
-    const fromEnv = this.config.get<string>("WIX_PRIVATE_API_KEY");
-    if (fromEnv != null && fromEnv.trim() !== "") {
-      return fromEnv.trim();
-    }
-
-    const row = await this.prisma.wixIntegration.findUnique({
-      where: { id: WIX_INTEGRATION_SINGLETON_ID },
-    });
-    const fromDb = row?.privateApiKey?.trim();
-    return fromDb && fromDb.length > 0 ? fromDb : null;
   }
 
   private buildAuthHeaders(apiKey: string): Record<string, string> {

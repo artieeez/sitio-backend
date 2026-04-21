@@ -2,6 +2,7 @@ import { Body, Controller, Get, Patch } from "@nestjs/common";
 import { PatchWixIntegrationDto } from "./dto/patch-wix-integration.dto";
 import { WixIntegrationService } from "./wix-integration.service";
 
+/** Dashboard + clients: tenant-wide Wix keys (`GET`/`PATCH` under global `/api` prefix). */
 @Controller("integrations/wix")
 export class WixIntegrationController {
   constructor(private readonly wixIntegration: WixIntegrationService) {}
