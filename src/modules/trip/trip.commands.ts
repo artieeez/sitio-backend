@@ -14,3 +14,7 @@ export class UpdateTripCommand {
     public readonly dto: TripUpdateDto,
   ) {}
 }
+
+export class DeleteTripCommand {
+  constructor(public readonly tripId: string) {}
+}

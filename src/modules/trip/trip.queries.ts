@@ -15,3 +15,7 @@ export class GetPassengerStatusAggregatesQuery {
     public readonly includeRemoved: boolean,
   ) {}
 }
+
+export class GetTripDeleteEligibilityQuery {
+  constructor(public readonly tripId: string) {}
+}

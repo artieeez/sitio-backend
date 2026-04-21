@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -9,9 +10,10 @@ import {
 } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { TripUpdateDto } from "./dto/trip-update.dto";
-import { UpdateTripCommand } from "./trip.commands";
+import { DeleteTripCommand, UpdateTripCommand } from "./trip.commands";
 import {
   GetPassengerStatusAggregatesQuery,
+  GetTripDeleteEligibilityQuery,
   GetTripQuery,
 } from "./trip.queries";
 
@@ -32,6 +34,11 @@ export class TripController {
     );
   }
 
+  @Get(":tripId/delete-eligibility")
+  deleteEligibility(@Param("tripId", ParseUUIDPipe) tripId: string) {
+    return this.queryBus.execute(new GetTripDeleteEligibilityQuery(tripId));
+  }
+
   @Get(":tripId")
   get(@Param("tripId", ParseUUIDPipe) tripId: string) {
     return this.queryBus.execute(new GetTripQuery(tripId));
@@ -43,5 +50,10 @@ export class TripController {
     @Body() dto: TripUpdateDto,
   ) {
     return this.commandBus.execute(new UpdateTripCommand(tripId, dto));
+  }
+
+  @Delete(":tripId")
+  remove(@Param("tripId", ParseUUIDPipe) tripId: string) {
+    return this.commandBus.execute(new DeleteTripCommand(tripId));
   }
 }

@@ -5,6 +5,7 @@ import { mapPassengerWithStatus } from "../passenger/passenger.mapper";
 import { mapTrip } from "./trip.mapper";
 import {
   GetPassengerStatusAggregatesQuery,
+  GetTripDeleteEligibilityQuery,
   GetTripQuery,
   ListTripsForSchoolQuery,
 } from "./trip.queries";
@@ -107,6 +108,32 @@ export class GetPassengerStatusAggregatesHandler
       settledPaymentsCount,
       settledManualCount,
       unavailableCount,
+    };
+  }
+}
+
+@QueryHandler(GetTripDeleteEligibilityQuery)
+export class GetTripDeleteEligibilityHandler
+  implements IQueryHandler<GetTripDeleteEligibilityQuery>
+{
+  constructor(private readonly prisma: PrismaService) {}
+
+  async execute(query: GetTripDeleteEligibilityQuery) {
+    const trip = await this.prisma.trip.findUnique({
+      where: { id: query.tripId },
+    });
+    if (!trip) {
+      throw new NotFoundException({
+        message: "Trip not found",
+        code: "NOT_FOUND",
+      });
+    }
+    const passengerCount = await this.prisma.passenger.count({
+      where: { tripId: query.tripId },
+    });
+    return {
+      canDelete: passengerCount === 0,
+      passengerCount,
     };
   }
 }

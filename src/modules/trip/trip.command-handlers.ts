@@ -5,7 +5,11 @@ import {
 } from "@nestjs/common";
 import { CommandHandler, type ICommandHandler } from "@nestjs/cqrs";
 import { PrismaService } from "../../prisma/prisma.service";
-import { CreateTripCommand, UpdateTripCommand } from "./trip.commands";
+import {
+  CreateTripCommand,
+  DeleteTripCommand,
+  UpdateTripCommand,
+} from "./trip.commands";
 import { mapTrip } from "./trip.mapper";
 
 @CommandHandler(CreateTripCommand)
@@ -58,6 +62,34 @@ export class CreateTripHandler implements ICommandHandler<CreateTripCommand> {
       },
     });
     return mapTrip(trip);
+  }
+}
+
+@CommandHandler(DeleteTripCommand)
+export class DeleteTripHandler implements ICommandHandler<DeleteTripCommand> {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async execute(command: DeleteTripCommand): Promise<void> {
+    const { tripId } = command;
+    const trip = await this.prisma.trip.findUnique({
+      where: { id: tripId },
+    });
+    if (!trip) {
+      throw new NotFoundException({
+        message: "Trip not found",
+        code: "NOT_FOUND",
+      });
+    }
+    const passengerCount = await this.prisma.passenger.count({
+      where: { tripId },
+    });
+    if (passengerCount > 0) {
+      throw new ConflictException({
+        message: "Remove all passengers before deleting the trip",
+        code: "TRIP_HAS_PASSENGERS",
+      });
+    }
+    await this.prisma.trip.delete({ where: { id: tripId } });
   }
 }
 
