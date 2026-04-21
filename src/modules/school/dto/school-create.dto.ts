@@ -15,6 +15,11 @@ export class SchoolCreateDto {
   active?: boolean;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  wixCollectionId?: string | null;
+
+  @IsOptional()
   @ValidateIf((_, v) => v != null && v !== "")
   @IsUrl({ require_tld: false })
   url?: string | null;

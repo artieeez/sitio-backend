@@ -9,15 +9,17 @@ datasource db {
 }
 
 model School {
-  id          String   @id @default(uuid()) @db.Uuid
-  url         String?
-  active      Boolean  @default(true)
-  title       String?
-  description String?
-  imageUrl    String?  @map("image_url")
-  faviconUrl  String?  @map("favicon_url")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                String   @id @default(uuid()) @db.Uuid
+  /** Wix Stores collection GUID; optional link for catalog-driven school metadata. */
+  wixCollectionId   String?  @map("wix_collection_id")
+  url               String?
+  active            Boolean  @default(true)
+  title             String?
+  description       String?
+  imageUrl          String?  @map("image_url")
+  faviconUrl        String?  @map("favicon_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   trips Trip[]
 

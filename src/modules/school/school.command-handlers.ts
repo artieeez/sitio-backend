@@ -8,6 +8,14 @@ import {
 } from "./school.commands";
 import { mapSchool } from "./school.mapper";
 
+function normalizeWixCollectionId(
+  v: string | null | undefined,
+): string | null {
+  if (v === undefined || v === null) return null;
+  const t = v.trim();
+  return t.length === 0 ? null : t;
+}
+
 @CommandHandler(CreateSchoolCommand)
 export class CreateSchoolHandler
   implements ICommandHandler<CreateSchoolCommand>
@@ -18,6 +26,7 @@ export class CreateSchoolHandler
     const { dto } = command;
     const school = await this.prisma.school.create({
       data: {
+        wixCollectionId: normalizeWixCollectionId(dto.wixCollectionId),
         url: dto.url ?? null,
         title: dto.title ?? null,
         description: dto.description ?? null,
@@ -42,6 +51,9 @@ export class UpdateSchoolHandler
       const school = await this.prisma.school.update({
         where: { id: schoolId },
         data: {
+          ...(dto.wixCollectionId !== undefined && {
+            wixCollectionId: normalizeWixCollectionId(dto.wixCollectionId),
+          }),
           ...(dto.url !== undefined && { url: dto.url }),
           ...(dto.title !== undefined && { title: dto.title }),
           ...(dto.description !== undefined && {

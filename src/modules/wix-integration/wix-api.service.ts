@@ -14,6 +14,7 @@ import type {
   QueryCollectionsRequest,
   QueryCollectionsResponse,
   WixCatalogVersionKind,
+  WixStoreCollection,
 } from "./wix-catalog.types";
 import { WixIntegrationService } from "./wix-integration.service";
 
@@ -187,6 +188,48 @@ export class WixApiService {
     }
 
     return data as QueryCollectionsResponse;
+  }
+
+  /**
+   * Collections whose `name` starts with `prefix` (empty prefix → empty list, no request).
+   */
+  async searchCollectionsByPrefix(
+    prefix: string,
+  ): Promise<QueryCollectionsResponse> {
+    const p = prefix.trim();
+    if (p.length === 0) {
+      return { collections: [] };
+    }
+    return this.queryCollections({
+      query: {
+        filter: JSON.stringify({ name: { $startsWith: p } }),
+        sort: '[{"name":"asc"}]',
+        paging: { limit: 20, offset: 0 },
+      },
+      includeDescription: true,
+      includeNumberOfProducts: true,
+    });
+  }
+
+  /**
+   * Single collection by id via query filter.
+   */
+  async getCollectionById(
+    collectionId: string,
+  ): Promise<WixStoreCollection | null> {
+    const id = collectionId.trim();
+    if (!id) {
+      throw new BadGatewayException("Wix collection id is required");
+    }
+    const res = await this.queryCollections({
+      query: {
+        filter: JSON.stringify({ id: { $eq: id } }),
+        paging: { limit: 1, offset: 0 },
+      },
+      includeDescription: true,
+      includeNumberOfProducts: true,
+    });
+    return res.collections[0] ?? null;
   }
 
   /**

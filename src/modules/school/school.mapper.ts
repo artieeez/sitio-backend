@@ -3,6 +3,7 @@ import type { School } from "@prisma/client";
 export function mapSchool(s: School) {
   return {
     id: s.id,
+    wixCollectionId: s.wixCollectionId,
     active: s.active,
     url: s.url,
     title: s.title,
