@@ -1,0 +1,29 @@
+meta {
+  name: Query Collections (autocomplete by name)
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{wixStoresReaderBaseUrl}}/collections/query
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "query": {
+      "filter": "{\"name\": {\"$startsWith\": \"{{collectionNamePrefix}}\"}}",
+      "sort": "[{\"name\": \"asc\"}]",
+      "paging": {
+        "limit": {{collectionAutocompleteLimit}},
+        "offset": 0
+      }
+    }
+  }
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+}
