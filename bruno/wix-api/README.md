@@ -18,6 +18,7 @@ In Bruno, select environment **Local** and set:
 | `productId` | Product GUID to fetch. |
 | `wixStoresReaderBaseUrl` | Default `https://www.wixapis.com/stores-reader/v1` — change only if Wix updates the base path. |
 | `wixStoresV3ProvisionBaseUrl` | Default `https://www.wixapis.com/stores/v3/provision` for **Get Catalog Version** (`GET .../version`). |
+| `wixStoresV3ProductsBaseUrl` | Default `https://www.wixapis.com/stores/v3/products` for **Catalog V3 Get Product** (`GET .../products/{productId}`). |
 
 **Do not commit real secrets.** Prefer Bruno’s secret variables or keep keys only in your local Bruno app.
 
@@ -27,6 +28,7 @@ In Bruno, select environment **Local** and set:
 - **Get Product (merchant data)** — `includeMerchantSpecificData=true` (needs extra permissions).
 - **Get Product (with wix-site-id)** — same as Get Product but sends `wix-site-id` (matches Nest when `WIX_SITE_ID` is set).
 - **stores-provision-v3 / Get Catalog Version** — [`getCatalogVersion`](https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-versioning/get-catalog-version): `GET /stores/v3/provision/version` (scope `STORES.CATALOG_READ_LIMITED`). Optional **`Get Catalog Version (with wix-site-id)`** when the site header is required.
+- **stores-catalog-v3** — [`getProduct` (Catalog V3)](https://dev.wix.com/docs/api-reference/business-solutions/stores/catalog-v3/products-v3/get-product): `GET /stores/v3/products/{productId}`. Scopes: `STORES.PRODUCT_READ` (and `PRODUCT_READ_ADMIN` for non-visible products / merchant fields). **`Get Product (minimal)`** has no `fields` query; **`Get Product (sample fields)`** repeats `fields=...` per Wix docs; **`Get Product (with wix-site-id)`** adds `wix-site-id` if your auth needs site context.
 
 Add more `.bru` files under new folders as you explore additional Wix APIs.
 

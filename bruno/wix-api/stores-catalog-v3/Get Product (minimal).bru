@@ -1,0 +1,16 @@
+meta {
+  name: Get Product (minimal)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{wixStoresV3ProductsBaseUrl}}/{{productId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+}

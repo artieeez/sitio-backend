@@ -1,0 +1,16 @@
+meta {
+  name: Get Product (sample fields)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{wixStoresV3ProductsBaseUrl}}/{{productId}}?fields=VARIANT_OPTION_CHOICE_NAMES&fields=MERCHANT_DATA&fields=INFO_SECTION&fields=URL&fields=CURRENCY&fields=WEIGHT_MEASUREMENT_UNIT_INFO&fields=BREADCRUMBS_INFO&fields=MEDIA_ITEMS_INFO&fields=DESCRIPTION&fields=DIRECT_CATEGORIES_INFO&fields=ALL_CATEGORIES_INFO
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+}
