@@ -10,6 +10,12 @@ post {
   auth: none
 }
 
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+  wix-site-id: {{wixSiteId}}
+}
+
 body:json {
   {
     "query": {
@@ -19,11 +25,8 @@ body:json {
         "limit": {{collectionAutocompleteLimit}},
         "offset": 0
       }
-    }
+    },
+    "includeDescription": true,
+    "includeNumberOfProducts": true
   }
-}
-
-headers {
-  Authorization: {{wixApiKey}}
-  Accept: application/json
 }
