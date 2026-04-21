@@ -15,3 +15,7 @@ export class UpdateSchoolCommand {
 export class DeactivateSchoolCommand {
   constructor(public readonly schoolId: string) {}
 }
+
+export class DeleteSchoolCommand {
+  constructor(public readonly schoolId: string) {}
+}

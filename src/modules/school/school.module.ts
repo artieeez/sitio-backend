@@ -5,6 +5,7 @@ import { WixIntegrationModule } from "../wix-integration/wix-integration.module"
 import {
   CreateSchoolHandler,
   DeactivateSchoolHandler,
+  DeleteSchoolHandler,
   UpdateSchoolHandler,
 } from "./school.command-handlers";
 import { SchoolDeletionService } from "./school-deletion.service";
@@ -19,6 +20,7 @@ import { GetSchoolHandler, ListSchoolsHandler } from "./school.query-handlers";
     CreateSchoolHandler,
     UpdateSchoolHandler,
     DeactivateSchoolHandler,
+    DeleteSchoolHandler,
     ListSchoolsHandler,
     GetSchoolHandler,
   ],

@@ -100,16 +100,31 @@ describe("Schools (e2e)", () => {
       .expect(409);
   });
 
-  it("DELETE /api/schools/:id deactivates (204)", async () => {
+  it("POST /api/schools/:id/deactivate sets active false (204)", async () => {
     const created = await request(app.getHttpServer())
       .post("/api/schools")
-      .send({ title: "Del" })
+      .send({ title: "Soft" })
+      .expect(201);
+    const id = created.body.id as string;
+
+    await request(app.getHttpServer())
+      .post(`/api/schools/${id}/deactivate`)
+      .expect(204);
+
+    const row = await prisma.school.findUnique({ where: { id } });
+    expect(row?.active).toBe(false);
+  });
+
+  it("DELETE /api/schools/:id hard-deletes row (204)", async () => {
+    const created = await request(app.getHttpServer())
+      .post("/api/schools")
+      .send({ title: "Hard" })
       .expect(201);
     const id = created.body.id as string;
 
     await request(app.getHttpServer()).delete(`/api/schools/${id}`).expect(204);
 
     const row = await prisma.school.findUnique({ where: { id } });
-    expect(row?.active).toBe(false);
+    expect(row).toBeNull();
   });
 });

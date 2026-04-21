@@ -8,6 +8,7 @@ import type { SchoolUpdateDto } from "./dto/school-update.dto";
 import {
   CreateSchoolCommand,
   DeactivateSchoolCommand,
+  DeleteSchoolCommand,
   UpdateSchoolCommand,
 } from "./school.commands";
 import { SchoolDeletionService } from "./school-deletion.service";
@@ -187,5 +188,14 @@ export class DeactivateSchoolHandler
 
   async execute(command: DeactivateSchoolCommand): Promise<void> {
     await this.schoolDeletion.deactivateSchool(command.schoolId);
+  }
+}
+
+@CommandHandler(DeleteSchoolCommand)
+export class DeleteSchoolHandler implements ICommandHandler<DeleteSchoolCommand> {
+  constructor(private readonly schoolDeletion: SchoolDeletionService) {}
+
+  async execute(command: DeleteSchoolCommand): Promise<void> {
+    await this.schoolDeletion.permanentlyDeleteSchool(command.schoolId);
   }
 }

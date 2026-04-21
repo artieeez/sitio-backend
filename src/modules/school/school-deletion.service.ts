@@ -8,12 +8,12 @@ import type { School } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { WixApiService } from "../wix-integration/wix-api.service";
 
-export type SchoolDeactivateEligibilityDto = {
+export type SchoolDeleteEligibilityDto = {
   canDelete: boolean;
   hasWixCollection: boolean;
   /** Set when linked to Wix; 0 means empty collection. */
   productCount: number | null;
-  /** Stored id not found in Wix — delete allowed without remote collection delete. */
+  /** Stored id not found in Wix — hard delete allowed without remote collection delete. */
   wixCollectionMissing?: boolean;
   errorCode?: "WIX_NOT_CONFIGURED" | "WIX_QUERY_FAILED";
 };
@@ -25,9 +25,9 @@ export class SchoolDeletionService {
     private readonly wixApi: WixApiService,
   ) {}
 
-  async getDeactivateEligibility(
+  async getDeleteEligibility(
     schoolId: string,
-  ): Promise<SchoolDeactivateEligibilityDto> {
+  ): Promise<SchoolDeleteEligibilityDto> {
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
     });
@@ -42,7 +42,7 @@ export class SchoolDeletionService {
 
   private async eligibilityForSchoolRow(
     school: School,
-  ): Promise<SchoolDeactivateEligibilityDto> {
+  ): Promise<SchoolDeleteEligibilityDto> {
     const wixId = school.wixCollectionId?.trim();
     if (!wixId) {
       return {
@@ -92,6 +92,7 @@ export class SchoolDeletionService {
     }
   }
 
+  /** Soft-delete: mark inactive (no Wix checks). */
   async deactivateSchool(schoolId: string): Promise<void> {
     const school = await this.prisma.school.findUnique({
       where: { id: schoolId },
@@ -102,32 +103,47 @@ export class SchoolDeletionService {
         code: "NOT_FOUND",
       });
     }
-    const wixId = school.wixCollectionId?.trim();
-    if (!wixId) {
-      await this.softDeactivate(schoolId);
-      return;
+    await this.softDeactivate(schoolId);
+  }
+
+  /**
+   * Hard-delete row (cascades trips/passengers/payments). Enforces Wix collection rules
+   * and removes empty collection in Wix when applicable.
+   */
+  async permanentlyDeleteSchool(schoolId: string): Promise<void> {
+    const school = await this.prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+    if (!school) {
+      throw new NotFoundException({
+        message: "School not found",
+        code: "NOT_FOUND",
+      });
     }
-    const col = await this.wixApi.getCollectionById(wixId);
-    if (col) {
-      const n = col.numberOfProducts ?? 0;
-      if (n > 0) {
-        throw new ConflictException({
-          message: "Wix collection still has products",
-          code: "WIX_COLLECTION_HAS_PRODUCTS",
-          productCount: n,
-        });
-      }
-      try {
-        await this.wixApi.deleteCollection(wixId);
-      } catch (e) {
-        if (e instanceof NotFoundException) {
-          // Already removed in Wix; continue deactivating the school row.
-        } else {
-          throw e;
+    const wixId = school.wixCollectionId?.trim();
+    if (wixId) {
+      const col = await this.wixApi.getCollectionById(wixId);
+      if (col) {
+        const n = col.numberOfProducts ?? 0;
+        if (n > 0) {
+          throw new ConflictException({
+            message: "Wix collection still has products",
+            code: "WIX_COLLECTION_HAS_PRODUCTS",
+            productCount: n,
+          });
+        }
+        try {
+          await this.wixApi.deleteCollection(wixId);
+        } catch (e) {
+          if (e instanceof NotFoundException) {
+            // Already removed in Wix.
+          } else {
+            throw e;
+          }
         }
       }
     }
-    await this.softDeactivate(schoolId);
+    await this.prisma.school.delete({ where: { id: schoolId } });
   }
 
   private async softDeactivate(schoolId: string): Promise<void> {
