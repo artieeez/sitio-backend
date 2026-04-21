@@ -1,4 +1,5 @@
 import type { WixCatalogProduct } from "./wix-catalog.types";
+import { productDescriptionToRichTextHtml } from "./wix-product-description-html";
 
 export type WixProductSummaryDto = {
   id: string;
@@ -6,6 +7,8 @@ export type WixProductSummaryDto = {
   slug?: string;
   description?: string | null;
   imageUrl: string | null;
+  /** Wix Media Manager file id for the main product image, when present. */
+  wixMediaFileId: string | null;
   productPageUrl: string | null;
   /** BRL minor units when `priceData.currency` is BRL (or unknown). */
   defaultExpectedAmountMinor: number | null;
@@ -33,6 +36,25 @@ export function extractWixProductImageUrl(media: unknown): string | null {
     if (typeof url === "string" && url.length > 0) return url;
   }
   return null;
+}
+
+/** Best-effort Wix media file id from `mainMedia.image` / `thumbnail` (for trip `wixMediaFileId`). */
+export function extractWixProductMainMediaFileId(media: unknown): string | null {
+  if (!media || typeof media !== "object") return null;
+  const m = media as Record<string, unknown>;
+  const main = m.mainMedia;
+  if (!main || typeof main !== "object") return null;
+  const mm = main as Record<string, unknown>;
+  const fromNode = (node: unknown): string | null => {
+    if (!node || typeof node !== "object") return null;
+    const img = node as Record<string, unknown>;
+    const id = img.id ?? img._id;
+    if (typeof id === "string" && id.trim().length > 0) {
+      return id.trim();
+    }
+    return null;
+  };
+  return fromNode(mm.image) ?? fromNode(mm.thumbnail);
 }
 
 function minorFromPriceData(
@@ -70,12 +92,14 @@ export function toWixProductSummaryDto(
   if (!id) return null;
   const name = p.name?.trim();
   if (!name) return null;
+  const rawDesc = (p as Record<string, unknown>).description;
   return {
     id,
     name,
     slug: p.slug,
-    description: p.description ?? null,
+    description: productDescriptionToRichTextHtml(rawDesc),
     imageUrl: extractWixProductImageUrl(p.media),
+    wixMediaFileId: extractWixProductMainMediaFileId(p.media),
     productPageUrl: productPageUrlFromProduct(p),
     defaultExpectedAmountMinor: minorFromPriceData(p),
   };
