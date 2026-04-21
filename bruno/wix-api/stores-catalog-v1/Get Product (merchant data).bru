@@ -1,0 +1,20 @@
+meta {
+  name: Get Product (merchant data)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{wixStoresReaderBaseUrl}}/products/{{productId}}
+  body: none
+  auth: none
+}
+
+params:query {
+  includeMerchantSpecificData: true
+}
+
+headers {
+  Authorization: {{wixApiKey}}
+  Accept: application/json
+}

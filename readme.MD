@@ -46,6 +46,10 @@ pnpm run format      # Biome format only
 - Runtime DB access: **`pg`** + **`@prisma/adapter-pg`** (see `PrismaService`); `DATABASE_URL` must be set at process start.
 - Lint/format: **Biome**
 
+## Wix API exploration (Bruno)
+
+Manual calls to Wix REST endpoints (before implementing them in Nest) live in **`bruno/wix-api/`**. Open that folder as a [Bruno](https://www.usebruno.com/) collection; see `bruno/wix-api/README.md`.
+
 ## Design references
 
 - [Quickstart & local setup](../sitio-design-notes/specs/001-school-trip-payments/quickstart.md) (sibling repo under the same parent folder as this repo)
