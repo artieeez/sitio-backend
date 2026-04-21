@@ -6,6 +6,7 @@ import { WixApiService } from "../wix-integration/wix-api.service";
 import type { SchoolCreateDto } from "./dto/school-create.dto";
 import type { SchoolUpdateDto } from "./dto/school-update.dto";
 import {
+  ActivateSchoolCommand,
   CreateSchoolCommand,
   DeactivateSchoolCommand,
   DeleteSchoolCommand,
@@ -188,6 +189,17 @@ export class DeactivateSchoolHandler
 
   async execute(command: DeactivateSchoolCommand): Promise<void> {
     await this.schoolDeletion.deactivateSchool(command.schoolId);
+  }
+}
+
+@CommandHandler(ActivateSchoolCommand)
+export class ActivateSchoolHandler
+  implements ICommandHandler<ActivateSchoolCommand>
+{
+  constructor(private readonly schoolDeletion: SchoolDeletionService) {}
+
+  async execute(command: ActivateSchoolCommand): Promise<void> {
+    await this.schoolDeletion.activateSchool(command.schoolId);
   }
 }
 

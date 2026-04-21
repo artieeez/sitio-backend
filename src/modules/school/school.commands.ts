@@ -16,6 +16,10 @@ export class DeactivateSchoolCommand {
   constructor(public readonly schoolId: string) {}
 }
 
+export class ActivateSchoolCommand {
+  constructor(public readonly schoolId: string) {}
+}
+
 export class DeleteSchoolCommand {
   constructor(public readonly schoolId: string) {}
 }

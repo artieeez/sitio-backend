@@ -3,6 +3,7 @@ import { CqrsModule } from "@nestjs/cqrs";
 import { PrismaModule } from "../../prisma/prisma.module";
 import { WixIntegrationModule } from "../wix-integration/wix-integration.module";
 import {
+  ActivateSchoolHandler,
   CreateSchoolHandler,
   DeactivateSchoolHandler,
   DeleteSchoolHandler,
@@ -20,6 +21,7 @@ import { GetSchoolHandler, ListSchoolsHandler } from "./school.query-handlers";
     CreateSchoolHandler,
     UpdateSchoolHandler,
     DeactivateSchoolHandler,
+    ActivateSchoolHandler,
     DeleteSchoolHandler,
     ListSchoolsHandler,
     GetSchoolHandler,

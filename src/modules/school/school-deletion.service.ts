@@ -106,6 +106,23 @@ export class SchoolDeletionService {
     await this.softDeactivate(schoolId);
   }
 
+  /** Mark active again (no Wix checks). */
+  async activateSchool(schoolId: string): Promise<void> {
+    const school = await this.prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+    if (!school) {
+      throw new NotFoundException({
+        message: "School not found",
+        code: "NOT_FOUND",
+      });
+    }
+    await this.prisma.school.update({
+      where: { id: schoolId },
+      data: { active: true },
+    });
+  }
+
   /**
    * Hard-delete row (cascades trips/passengers/payments). Enforces Wix collection rules
    * and removes empty collection in Wix when applicable.

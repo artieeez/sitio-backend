@@ -14,6 +14,7 @@ import { CommandBus, QueryBus } from "@nestjs/cqrs";
 import { SchoolCreateDto } from "./dto/school-create.dto";
 import { SchoolUpdateDto } from "./dto/school-update.dto";
 import {
+  ActivateSchoolCommand,
   CreateSchoolCommand,
   DeactivateSchoolCommand,
   DeleteSchoolCommand,
@@ -60,6 +61,12 @@ export class SchoolController {
     @Body() dto: SchoolUpdateDto,
   ) {
     return this.commandBus.execute(new UpdateSchoolCommand(schoolId, dto));
+  }
+
+  @Post(":schoolId/activate")
+  @HttpCode(204)
+  activate(@Param("schoolId", ParseUUIDPipe) schoolId: string) {
+    return this.commandBus.execute(new ActivateSchoolCommand(schoolId));
   }
 
   @Post(":schoolId/deactivate")

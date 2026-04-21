@@ -115,6 +115,24 @@ describe("Schools (e2e)", () => {
     expect(row?.active).toBe(false);
   });
 
+  it("POST /api/schools/:id/activate sets active true (204)", async () => {
+    const created = await request(app.getHttpServer())
+      .post("/api/schools")
+      .send({ title: "Re" })
+      .expect(201);
+    const id = created.body.id as string;
+    await request(app.getHttpServer())
+      .post(`/api/schools/${id}/deactivate`)
+      .expect(204);
+
+    await request(app.getHttpServer())
+      .post(`/api/schools/${id}/activate`)
+      .expect(204);
+
+    const row = await prisma.school.findUnique({ where: { id } });
+    expect(row?.active).toBe(true);
+  });
+
   it("DELETE /api/schools/:id hard-deletes row (204)", async () => {
     const created = await request(app.getHttpServer())
       .post("/api/schools")
