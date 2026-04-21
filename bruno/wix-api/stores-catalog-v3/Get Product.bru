@@ -1,5 +1,5 @@
 meta {
-  name: Get Product (minimal)
+  name: Get Product
   type: http
   seq: 1
 }
@@ -13,4 +13,5 @@ get {
 headers {
   Authorization: {{wixApiKey}}
   Accept: application/json
+  wix-site-id: {{wixSiteId}}
 }
